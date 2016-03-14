@@ -1,6 +1,6 @@
 {
   "name": "superagent-throttle",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A plugin for superagent that throttles requests.",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,6 @@
     "throttle",
     "superagent",
     "queue"
-
   ],
   "author": "Levi Wheatcroft <levi@wheatcrofts.com.au> (http://leviwheatcroft.com/)",
   "license": "MIT",
