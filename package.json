@@ -1,6 +1,6 @@
 {
   "name": "superagent-queue",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A plugin for superagent that queues requests.",
   "main": "index.js",
   "scripts": {
