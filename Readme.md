@@ -1,21 +1,21 @@
 # superagent-queue
 
   A plugin for [superagent](https://github.com/visionmedia/superagent) that
-  queues requests. Useful for rate or concurrency limited APIs.
+  throttles requests. Useful for rate or concurrency limited APIs.
 
 ## Installation
 
   Install with [npm](http://npmjs.org):
 
-    $ npm install superagent-queue
+    $ npm install superagent-throttle
 
 ## Basic Usage
 
     var request = require('superagent');
     var _ = require('underscore');
-    var Queue = require('./index');
+    var Throttle = require('./index');
 
-    var queue = new Queue({
+    var throttle = new Throttle({
       active: true,
       rate: 5,
       ratePer: 10000,
@@ -26,11 +26,11 @@
       var width = 100 + iteration;
       request
       .get('http://placekitten.com/' + width + '/100')
-      .use(queue.plugin)
+      .use(throttle.plugin)
       .end(function(err, res) {
         console.log(err ? err : 'retrieved ' + iteration);
       });
-      console.log('queued ' + iteration);
+      console.log('throttled ' + iteration);
     });
 
 ## Advanced Usage

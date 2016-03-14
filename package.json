@@ -1,26 +1,27 @@
 {
-  "name": "superagent-queue",
-  "version": "0.1.0",
-  "description": "A plugin for superagent that queues requests.",
+  "name": "superagent-throttle",
+  "version": "0.0.1",
+  "description": "A plugin for superagent that throttles requests.",
   "main": "index.js",
   "scripts": {
     "test": ""
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/leviwheatcroft/superagent-queue.git"
+    "url": "https://github.com/leviwheatcroft/superagent-throttle.git"
   },
   "keywords": [
-    "queue",
+    "throttle",
     "superagent",
-    "throttle"
+    "queue"
+
   ],
   "author": "Levi Wheatcroft <levi@wheatcrofts.com.au> (http://leviwheatcroft.com/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/leviwheatcroft/superagent-queue/issues"
+    "url": "https://github.com/leviwheatcroft/superagent-throttle/issues"
   },
-  "homepage": "https://github.com/leviwheatcroft/superagent-queue",
+  "homepage": "https://github.com/leviwheatcroft/superagent-throttle",
   "dependencies": {
     "underscore": "^1.8.3"
   }

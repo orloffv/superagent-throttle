@@ -1,8 +1,8 @@
 var request = require('superagent');
 var _ = require('underscore');
-var Queue = require('./index');
+var Throttle = require('./index');
 
-var queue = new Queue({
+var throttle = new Throttle({
   active: true,
   rate: 5,
   ratePer: 10000,
@@ -13,9 +13,9 @@ _.each(_.range(1, 15), function(iteration) {
   var width = 100 + iteration;
   request
   .get('http://placekitten.com/' + width + '/100')
-  .use(queue.plugin)
+  .use(throttle.plugin)
   .end(function(err, res) {
     console.log(err ? err : 'retrieved ' + iteration);
   });
-  console.log('queued ' + iteration);
+  console.log('added ' + iteration);
 });
