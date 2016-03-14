@@ -1,11 +1,21 @@
-# superagent-queue
+# superagent-throttle
 
   A plugin for [superagent](https://github.com/visionmedia/superagent) that
   throttles requests. Useful for rate or concurrency limited APIs.
 
+## Features
+
+ * This doesn't just deley requests by an arbitrary number of ms, but
+   intelligently manages requests so they're sent as soon as possible whilst
+   staying beneath rate limits.
+ * Follows [superagent](https://github.com/visionmedia/superagent)
+   `.use(throttle.plugin)` architecture
+ * Hackable
+ * Can use multiple instances
+
 ## Installation
 
-  Install with [npm](http://npmjs.org):
+Install with [npm](http://npmjs.org):
 
     $ npm install superagent-throttle
 
