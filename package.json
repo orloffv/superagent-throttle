@@ -4,22 +4,23 @@
   "description": "A plugin for superagent that queues requests.",
   "main": "index.js",
   "scripts": {
-    "test": "\"\""
+    "test": ""
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mattahorton/superagent-prefix.git"
+    "url": "https://github.com/leviwheatcroft/superagent-queue.git"
   },
   "keywords": [
     "queue",
-    "superagent"
+    "superagent",
+    "throttle"
   ],
   "author": "Levi Wheatcroft <levi@wheatcrofts.com.au> (http://leviwheatcroft.com/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mattahorton/superagent-prefix/issues"
+    "url": "https://github.com/leviwheatcroft/superagent-queue/issues"
   },
-  "homepage": "https://github.com/mattahorton/superagent-prefix",
+  "homepage": "https://github.com/leviwheatcroft/superagent-queue",
   "dependencies": {
     "underscore": "^1.8.3"
   }

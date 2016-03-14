@@ -1,7 +1,6 @@
-var _ = require('underscore');
+var _ = require('underscore')
 
 var Queue;
-var instances = {};
 
 var defaults = {
   name: 'default',
@@ -13,30 +12,47 @@ var defaults = {
 
 /**
  * Queue
- * The queue object. Pretty much private to this module, the exported fn returns
- * an instance method queue.plugin for use with superagent.
+ * The queue object.
  *
  * @class
- * @param {string} [queueName] - identifier for queue
  * @param {object} options - key value options
  */
-Queue = function(queueName, options) {
-  _.extend(
-    this,
+Queue = function(options) {
+  this.set(_.extend(
+    // instance properties
     {
-      // instance properties
-      requestTimes: [0],
-      current: 0,
-      buffer: [],
-      next: false
+      _requestTimes: [0],
+      _current: 0,
+      _buffer: [],
+      _timeout: false
     },
-    // defaults
     defaults,
-    // override defaults with passed in options
     options
-  );
-  instances[queueName] = this;
+  ))
+  this.bindPlugin()
 };
+
+/**
+ * set
+ * update options on instance
+ *
+ * alternate syntax:
+ * queue.set('active', true)
+ * queue.set({active: true})
+ *
+ * @method
+ * @param {String|Object} options - either key value object or keyname
+ * @param {Mixed} [value] - value for key
+ * @returns null
+ */
+Queue.prototype.set = function(options, value) {
+  if (_.isString(options) && value) {
+    options = {}
+    options[options] = value
+  }
+  _.extend(this, options)
+  this.cycle()
+}
 
 /**
  * hasCapacity
@@ -48,18 +64,18 @@ Queue = function(queueName, options) {
  */
 Queue.prototype.hasCapacity = function() {
   // make requestTimes `this.rate` long. Oldest request will be 0th index
-  if (this.requestTimes.length > this.rate) {
-    this.requestTimes = _.last(this.requestTimes, this.rate);
+  if (this._requestTimes.length > this.rate) {
+    this._requestTimes = _.last(this._requestTimes, this.rate);
   }
   return (
     // not paused
     (this.active) &&
     // not at concurrency limit
-    (this.current < this.concurrent) &&
+    (this._current < this.concurrent) &&
     // less than `ratePer`
-    ((Date.now() - this.requestTimes[0]) > this.ratePer) &&
+    ((Date.now() - this._requestTimes[0]) > this.ratePer) &&
     // something waiting in the queue
-    (this.buffer.length)
+    (this._buffer.length)
   );
 };
 
@@ -74,96 +90,80 @@ Queue.prototype.hasCapacity = function() {
  * @method
  * @param {Function} [fn] - a function which fires a request, use the enclosed
  *   nature of fn to store arguments et cetera
+ * @returns null
  */
 Queue.prototype.cycle = function(fn) {
   var queue = this;
 
-  clearTimeout(queue.next);
+  clearTimeout(queue._timeout);
   if (fn) {
-    queue.buffer.push(fn);
+    queue._buffer.push(fn);
   }
-
   // fire requests
   while (queue.hasCapacity()) {
-    queue.buffer.shift()();
-    queue.requestTimes.push(Date.now());
-    queue.current += 1;
+    queue._buffer.shift()();
+    queue._requestTimes.push(Date.now());
+    queue._current += 1;
   }
 
-  if (queue.buffer.length == 0) {
-    // no more queued items
-    return;
-  } else if (queue.current < queue.concurrent) {
-    // if bound by rate, delay
-    queue.next = setTimeout(function() {
+
+  if (
+    // if:
+    //  - no more queued items
+    //  - paused
+    //  - waiting for concurrency
+    // then: do nothing, cycle will be called again when these states change.
+    (queue._buffer.length == 0) ||
+    (!queue.active) ||
+    (queue._current >= queue.concurrent)
+  ) {
+    return
+  } else if (
+    // if:
+    //  - limited by rate
+    // then:
+    //  - a timer must be set
+    (queue._current < queue.concurrent)
+  ) {
+    queue._timeout = setTimeout(function() {
       queue.cycle();
-    }, queue.ratePer - (Date.now() - queue.requestTimes[0]));
-  } else {
-    // waiting for a response to clear
+    }, queue.ratePer - (Date.now() - queue._requestTimes[0]));
   }
 };
 
 /**
- * plugin
- * this function is returned by the exported function. it's designed to be used
- * in a `.use` call with superagent
+ * bindPlugin
+ * create an instance method called `plugin` it needs an enclosure like this to
+ * store a reference to the queue, otherwise the plugin, when called by
+ * superagent, will have no reference to itself.
+ * this should be called by the class constructor
+ *
+ * `superagent` `use` function should refer to this plugin method a la
+ * `.use(queue.plugin)`
  *
  * @method
- * @param {Request} request - a superagent request
+ * @returns null
  */
-Queue.prototype.plugin = function(request) {
-  var queue = request.queue = this;
-
-  // replace request.end
-  request.queued = request.end;
-  request.end = function() {
-    var args;
-    args = arguments;
-    // this anon function will be placed in the queue
-    this.queue.cycle(function() {
-      request.queued.apply(request, args);
-    });
-  };
-  // attend to the queue once we get a response
-  request.on('end', function(response) {
-    request.queue.current -= 1;
-    request.queue.cycle();
-  });
+Queue.prototype.bindPlugin = function() {
+  var queue = this
+  this.plugin = function(request) {
+    request.queue = queue
+    // replace request.end
+    request.queued = request.end
+    request.end = function() {
+      var args
+      args = arguments
+      // this anon function will be placed in the queue
+      request.queue.cycle(function() {
+        request.queued.apply(request, args)
+      })
+    }
+    // attend to the queue once we get a response
+    request.on('end', function(response) {
+      request.queue._current -= 1
+      request.queue.cycle()
+    })
+  }
 }
 
-/**
- * module.exports
- * always returns an the plugin instance method for the specified queue. can
- * be used to configure a queue
- *
- * @method
- * @param {String} [queueName] - specify queue
- * @param {Object} options - key value options
- * @returns {Function} a function accepting a superagent request to be injected
- */
-module.exports = function(queueName, options) {
-  var queue;
-  // deal with alternative options
-  if (_.isObject(queueName)) {
-    options = queueName;
-    queueName = _.has(queueName, 'name') ? queueName.name : 'default';
-  }
-  if (!queueName) {
-    queueName = 'default';
-  }
-  // find existing queue
-  if (_.has(instances, queueName)) {
-    queue = instances[queueName];
-    if (options) {
-      _.extend(queue, options);
-      queue.cycle();
-    }
-  } else {
-    // or create a new one
-    queue = new Queue(queueName, options);
-  }
-
-  return function() {
-    queue.plugin.apply(queue, arguments);
-  };
-};
+module.exports = Queue
