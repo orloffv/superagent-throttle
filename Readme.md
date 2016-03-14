@@ -45,7 +45,7 @@ Install with [npm](http://npmjs.org):
 
 ## Advanced Usage
 
-See [theMovieDbApi](https://github.com/leviwheatcroft/themoviedbapi/blob/master/index.js)
+See [theMovieDbApi](https://github.com/leviwheatcroft/moviedb-api/blob/master/index.js)
 
 ## License
 
