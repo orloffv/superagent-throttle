@@ -163,6 +163,7 @@ Throttle.prototype.bindPlugin = function() {
       request.throttle._current -= 1
       request.throttle.cycle()
     })
+    return request
   }
 }
 

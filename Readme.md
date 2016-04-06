@@ -5,7 +5,7 @@
 
 ## Features
 
- * This doesn't just deley requests by an arbitrary number of ms, but
+ * This doesn't just delay requests by an arbitrary number of ms, but
    intelligently manages requests so they're sent as soon as possible whilst
    staying beneath rate limits.
  * Follows [superagent](https://github.com/visionmedia/superagent)
@@ -17,7 +17,7 @@
 
 Install with [npm](http://npmjs.org):
 
-    $ npm install superagent-throttle
+    $ npm install --save superagent-throttle
 
 ## Basic Usage
 
@@ -40,8 +40,24 @@ Install with [npm](http://npmjs.org):
       .end(function(err, res) {
         console.log(err ? err : 'retrieved ' + iteration);
       });
-      console.log('throttled ' + iteration);
+      console.log('added ' + iteration);
     });
+
+## Options
+
+ * `active`: whether or not the queue is paused.
+ * `rate`: how many requests can be sent every `ratePer`
+ * `ratePer`: number of ms in which `rate` requests may be sent
+ * `concurrent`: how many requests can be sent concurrently
+
+Options can be set after instantiation using the `set` method.
+
+```javascript
+
+    var throttle = new require('./index')({ active: false }) // start paused
+    throttle.set('active', true) // unpause
+
+```
 
 ## Advanced Usage
 
