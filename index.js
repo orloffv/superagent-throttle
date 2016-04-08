@@ -157,6 +157,7 @@ Throttle.prototype.bindPlugin = function() {
       request.throttle.cycle(function() {
         request.throttled.apply(request, args)
       })
+      return request
     }
     // attend to the throttle once we get a response
     request.on('end', function(response) {
