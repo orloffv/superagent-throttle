@@ -1,21 +1,27 @@
-var request = require('superagent');
-var _ = require('underscore');
-var Throttle = require('./index');
+'use strict'
+const request       = require('superagent')
+const _             = require('lodash')
+const Throttle      = require('./index')
 
-var throttle = new Throttle({
+// create throttle instance
+let throttle = new Throttle({
+  // start unpaused
   active: true,
+  // send max 5 requests every `ratePer` ms
   rate: 5,
+  // send max `rate` requests every 10000 ms
   ratePer: 10000,
+  // max 2 requests should run concurrently
   concurrent: 2
-});
+})
 
 _.each(_.range(1, 15), function(iteration) {
-  var width = 100 + iteration;
+  var width = 100 + iteration
   request
   .get('http://placekitten.com/' + width + '/100')
   .use(throttle.plugin)
   .end(function(err, res) {
-    console.log(err ? err : 'retrieved ' + iteration);
-  });
-  console.log('added ' + iteration);
-});
+    console.log(err ? err : 'retrieved ' + iteration)
+  })
+  console.log('added ' + iteration)
+})

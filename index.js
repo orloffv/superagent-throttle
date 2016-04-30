@@ -1,17 +1,26 @@
-var _ = require('underscore')
+'use strict'
+const _ = require('lodash')
 
-var Throttle;
+let Throttle;
 
-var defaults = {
+/**
+ * ## default options
+ */
+let defaults = {
+  // not sure if `name` is used anymore
   name: 'default',
+  // start unpaused ?
   active: true,
+  // requests per `ratePer` ms
   rate: 40,
+  // ms per `rate` requests
   ratePer: 10000,
+  // max concurrent requests
   concurrent: 20
 };
 
 /**
- * Throttle
+ * ## Throttle
  * The throttle object.
  *
  * @class
@@ -33,7 +42,7 @@ Throttle = function(options) {
 };
 
 /**
- * set
+ * ## set
  * update options on instance
  *
  * alternate syntax:
@@ -55,7 +64,7 @@ Throttle.prototype.set = function(options, value) {
 }
 
 /**
- * hasCapacity
+ * ## hasCapacity
  * checks whether instance has available capacity either in rate or in
  * concurrency
  *
@@ -80,14 +89,13 @@ Throttle.prototype.hasCapacity = function() {
 };
 
 /**
- * cycle
+ * ## cycle
  * an iterator of sorts. Should be called when
  *  - something added to throttle (check if it can be sent immediately)
  *  - `ratePer` ms have elapsed since nth last call where n is `rate` (may have
  *    available rate)
  *  - some request has ended (may have available concurrency)
  *
- * @method
  * @param {Function} [fn] - a function which fires a request, use the enclosed
  *   nature of fn to store arguments et cetera
  * @returns null
@@ -113,7 +121,7 @@ Throttle.prototype.cycle = function(fn) {
     //  - paused
     //  - waiting for concurrency
     // then: do nothing, cycle will be called again when these states change.
-    (throttle._buffer.length == 0) ||
+    (throttle._buffer.length === 0) ||
     (!throttle.active) ||
     (throttle._current >= throttle.concurrent)
   ) {
@@ -132,7 +140,7 @@ Throttle.prototype.cycle = function(fn) {
 };
 
 /**
- * bindPlugin
+ * ## bindPlugin
  * create an instance method called `plugin` it needs an enclosure like this to
  * store a reference to the throttle, otherwise the plugin, when called by
  * superagent, will have no reference to itself.
@@ -160,7 +168,7 @@ Throttle.prototype.bindPlugin = function() {
       return request
     }
     // attend to the throttle once we get a response
-    request.on('end', function(response) {
+    request.on('end', function() {
       request.throttle._current -= 1
       request.throttle.cycle()
     })
