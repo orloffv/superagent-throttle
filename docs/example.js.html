@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>example.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="doc-style.css" />
+  <script src="doc-filelist.js"></script>
+  <script>
+    var relativeDir = "", thisFile = "example.js", defaultSidebar = true;
+  </script>
+  <script src="doc-script.js"></script>
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+          <h1>example.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="s1">&#39;use strict&#39;</span>
+<span class="kr">const</span> <span class="nx">request</span>       <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;superagent&#39;</span><span class="p">)</span>
+<span class="kr">const</span> <span class="nx">_</span>             <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;lodash&#39;</span><span class="p">)</span>
+<span class="kr">const</span> <span class="nx">Throttle</span>      <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./index&#39;</span><span class="p">)</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
+</div>
+<p>create throttle instance</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="kd">let</span> <span class="nx">throttle</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Throttle</span><span class="p">({</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
+</div>
+<p>start unpaused</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">active</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+</div>
+<p>send max 5 requests every <code>ratePer</code> ms</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">rate</span><span class="o">:</span> <span class="mi">5</span><span class="p">,</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
+</div>
+<p>send max <code>rate</code> requests every 10000 ms</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">ratePer</span><span class="o">:</span> <span class="mi">10000</span><span class="p">,</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+</div>
+<p>max 2 requests should run concurrently</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">concurrent</span><span class="o">:</span> <span class="mi">2</span>
+<span class="p">})</span>
+
+<span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span> <span class="kd">function</span><span class="p">(</span><span class="nx">iteration</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">width</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">+</span> <span class="nx">iteration</span>
+  <span class="nx">request</span>
+  <span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;http://placekitten.com/&#39;</span> <span class="o">+</span> <span class="nx">width</span> <span class="o">+</span> <span class="s1">&#39;/100&#39;</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">plugin</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">err</span> <span class="o">?</span> <span class="nx">err</span> <span class="o">:</span> <span class="s1">&#39;retrieved &#39;</span> <span class="o">+</span> <span class="nx">iteration</span><span class="p">)</span>
+  <span class="p">})</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;added &#39;</span> <span class="o">+</span> <span class="nx">iteration</span><span class="p">)</span>
+<span class="p">})</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>

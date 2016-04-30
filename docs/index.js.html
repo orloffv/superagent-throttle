@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>index.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="doc-style.css" />
+  <script src="doc-filelist.js"></script>
+  <script>
+    var relativeDir = "", thisFile = "index.js", defaultSidebar = true;
+  </script>
+  <script src="doc-script.js"></script>
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h2">
+        <a href="#default%20options">default options</a>
+      </div>
+      <div class="heading h2">
+        <a href="#throttle">Throttle</a>
+      </div>
+      <div class="heading h2">
+        <a href="#set">set</a>
+      </div>
+      <div class="heading h2">
+        <a href="#hascapacity">hasCapacity</a>
+      </div>
+      <div class="heading h2">
+        <a href="#cycle">cycle</a>
+      </div>
+      <div class="heading h2">
+        <a href="#bindplugin">bindPlugin</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+          <h1>index.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="s1">&#39;use strict&#39;</span>
+<span class="kr">const</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;lodash&#39;</span><span class="p">)</span>
+
+<span class="kd">let</span> <span class="nx">Throttle</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="default%20options">
+  <h2>
+    <a href="#default%20options" name="default%20options" class="pilcrow">&#182;</a>
+    default options
+  </h2>
+</div>
+
+  </div>
+  <div class="body">
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="kd">let</span> <span class="nx">defaults</span> <span class="o">=</span> <span class="p">{</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
+</div>
+<p>not sure if <code>name</code> is used anymore</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+</div>
+<p>start unpaused ?</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">active</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
+</div>
+<p>requests per <code>ratePer</code> ms</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">rate</span><span class="o">:</span> <span class="mi">40</span><span class="p">,</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+</div>
+<p>ms per <code>rate</code> requests</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">ratePer</span><span class="o">:</span> <span class="mi">10000</span><span class="p">,</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
+</div>
+<p>max concurrent requests</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">concurrent</span><span class="o">:</span> <span class="mi">20</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="throttle">
+  <h2>
+    <a href="#throttle" name="throttle" class="pilcrow">&#182;</a>
+    Throttle
+  </h2>
+</div>
+
+
+<p>The throttle object.</p>
+  </div>
+  <div class="body">
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">class</div>
+    <div class="dox_tag_detail">
+    </div>
+    <div class="dox_tag_title">Params</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">options</span>
+      <span class="dox_type">object</span>
+      <span><ul>
+<li>key value options</li>
+</ul></span>
+    </div>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">Throttle</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
+</div>
+<p>instance properties</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="p">{</span>
+      <span class="nx">_requestTimes</span><span class="o">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+      <span class="nx">_current</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+      <span class="nx">_buffer</span><span class="o">:</span> <span class="p">[],</span>
+      <span class="nx">_timeout</span><span class="o">:</span> <span class="kc">false</span>
+    <span class="p">},</span>
+    <span class="nx">defaults</span><span class="p">,</span>
+    <span class="nx">options</span>
+  <span class="p">))</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">bindPlugin</span><span class="p">()</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="set">
+  <h2>
+    <a href="#set" name="set" class="pilcrow">&#182;</a>
+    set
+  </h2>
+</div>
+
+
+<p>update options on instance</p>
+  </div>
+  <div class="body"><p>alternate syntax:
+throttle.set('active', true)
+throttle.set({active: true})</p>
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">method</div>
+    <div class="dox_tag_detail">
+    </div>
+    <div class="dox_tag_title">Params</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">options</span>
+      <span class="dox_type">String</span>
+      <span class="dox_type">Object</span>
+      <span><ul>
+<li>either key value object or keyname</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">[value]</span>
+      <span class="dox_type">Mixed</span>
+      <span><ul>
+<li>value for key</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_title">Returns</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name"></span>
+      <span>null</span>
+    </div>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">Throttle</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">set</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">isString</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">options</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="nx">options</span><span class="p">[</span><span class="nx">options</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span>
+  <span class="p">}</span>
+  <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">cycle</span><span class="p">()</span>
+<span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="hascapacity">
+  <h2>
+    <a href="#hascapacity" name="hascapacity" class="pilcrow">&#182;</a>
+    hasCapacity
+  </h2>
+</div>
+
+
+<p>checks whether instance has available capacity either in rate or in
+concurrency</p>
+  </div>
+  <div class="body">
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">method</div>
+    <div class="dox_tag_detail">
+    </div>
+    <div class="dox_tag_title">Returns</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name"></span>
+      <span class="dox_type">Boolean
+</span>
+      <span>{Boolean}</span>
+    </div>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">Throttle</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">hasCapacity</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-12" id="section-12">&#182;</a>
+</div>
+<p>make requestTimes <code>this.rate</code> long. Oldest request will be 0th index</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_requestTimes</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">rate</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_requestTimes</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">last</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_requestTimes</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">rate</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="p">(</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-13" id="section-13">&#182;</a>
+</div>
+<p>not paused</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">active</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-14" id="section-14">&#182;</a>
+</div>
+<p>not at concurrency limit</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_current</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">concurrent</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-15" id="section-15">&#182;</a>
+</div>
+<p>less than <code>ratePer</code></p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="p">((</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="k">this</span><span class="p">.</span><span class="nx">_requestTimes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">ratePer</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-16" id="section-16">&#182;</a>
+</div>
+<p>something waiting in the throttle</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_buffer</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span>
+  <span class="p">);</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="cycle">
+  <h2>
+    <a href="#cycle" name="cycle" class="pilcrow">&#182;</a>
+    cycle
+  </h2>
+</div>
+
+
+<p>an iterator of sorts. Should be called when
+ - something added to throttle (check if it can be sent immediately)
+ - <code>ratePer</code> ms have elapsed since nth last call where n is <code>rate</code> (may have
+   available rate)
+ - some request has ended (may have available concurrency)</p>
+  </div>
+  <div class="body">
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">Params</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">[fn]</span>
+      <span class="dox_type">Function</span>
+      <span><ul>
+<li>a function which fires a request, use the enclosed
+nature of fn to store arguments et cetera</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_title">Returns</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name"></span>
+      <span>null</span>
+    </div>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">Throttle</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">cycle</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">throttle</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+
+  <span class="nx">clearTimeout</span><span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_timeout</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">_buffer</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+  <span class="p">}</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-18" id="section-18">&#182;</a>
+</div>
+<p>fire requests</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">while</span> <span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">hasCapacity</span><span class="p">())</span> <span class="p">{</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">_buffer</span><span class="p">.</span><span class="nx">shift</span><span class="p">()();</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">_requestTimes</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">());</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">_current</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="p">}</span>
+
+
+  <span class="k">if</span> <span class="p">(</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-19" id="section-19">&#182;</a>
+</div>
+<p>if:
+ - no more throttled items
+ - paused
+ - waiting for concurrency
+then: do nothing, cycle will be called again when these states change.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_buffer</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="o">||</span>
+    <span class="p">(</span><span class="o">!</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">active</span><span class="p">)</span> <span class="o">||</span>
+    <span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_current</span> <span class="o">&gt;=</span> <span class="nx">throttle</span><span class="p">.</span><span class="nx">concurrent</span><span class="p">)</span>
+  <span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-20" id="section-20">&#182;</a>
+</div>
+<p>if:
+ - limited by rate
+then:
+ - a timer must be set</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_current</span> <span class="o">&lt;</span> <span class="nx">throttle</span><span class="p">.</span><span class="nx">concurrent</span><span class="p">)</span>
+  <span class="p">)</span> <span class="p">{</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">_timeout</span> <span class="o">=</span> <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">throttle</span><span class="p">.</span><span class="nx">cycle</span><span class="p">();</span>
+    <span class="p">},</span> <span class="nx">throttle</span><span class="p">.</span><span class="nx">ratePer</span> <span class="o">-</span> <span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">throttle</span><span class="p">.</span><span class="nx">_requestTimes</span><span class="p">[</span><span class="mi">0</span><span class="p">]));</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="bindplugin">
+  <h2>
+    <a href="#bindplugin" name="bindplugin" class="pilcrow">&#182;</a>
+    bindPlugin
+  </h2>
+</div>
+
+
+<p>create an instance method called <code>plugin</code> it needs an enclosure like this to
+store a reference to the throttle, otherwise the plugin, when called by
+superagent, will have no reference to itself.
+this should be called by the class constructor</p>
+  </div>
+  <div class="body"><p><code>superagent</code> <code>use</code> function should refer to this plugin method a la
+<code>.use(throttle.plugin)</code></p>
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">method</div>
+    <div class="dox_tag_detail">
+    </div>
+    <div class="dox_tag_title">Returns</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name"></span>
+      <span>null</span>
+    </div>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">Throttle</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">bindPlugin</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">throttle</span> <span class="o">=</span> <span class="k">this</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">plugin</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span> <span class="o">=</span> <span class="nx">throttle</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-22" id="section-22">&#182;</a>
+</div>
+<p>replace request.end</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">throttled</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">end</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">end</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">args</span>
+      <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-23" id="section-23">&#182;</a>
+</div>
+<p>this anon function will be placed in the throttle</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">cycle</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">request</span><span class="p">.</span><span class="nx">throttled</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">args</span><span class="p">)</span>
+      <span class="p">})</span>
+      <span class="k">return</span> <span class="nx">request</span>
+    <span class="p">}</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-24" id="section-24">&#182;</a>
+</div>
+<p>attend to the throttle once we get a response</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_current</span> <span class="o">-=</span> <span class="mi">1</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">cycle</span><span class="p">()</span>
+    <span class="p">})</span>
+    <span class="k">return</span> <span class="nx">request</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">Throttle</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>
