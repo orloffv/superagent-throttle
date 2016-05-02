@@ -74,7 +74,7 @@ Throttle.prototype.set = function(options, value) {
 Throttle.prototype.hasCapacity = function() {
   // make requestTimes `this.rate` long. Oldest request will be 0th index
   if (this._requestTimes.length > this.rate) {
-    this._requestTimes = _.last(this._requestTimes, this.rate);
+    this._requestTimes = _.castArray(_.last(this._requestTimes, this.rate));
   }
   return (
     // not paused
