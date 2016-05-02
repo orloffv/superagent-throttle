@@ -1,7 +1,7 @@
 'use strict'
 const _ = require('lodash')
 
-let Throttle;
+let Throttle
 
 /**
  * ## default options
@@ -17,7 +17,7 @@ let defaults = {
   ratePer: 10000,
   // max concurrent requests
   concurrent: 20
-};
+}
 
 /**
  * ## Throttle
@@ -39,7 +39,7 @@ Throttle = function(options) {
     options
   ))
   this.bindPlugin()
-};
+}
 
 /**
  * ## set
@@ -74,7 +74,7 @@ Throttle.prototype.set = function(options, value) {
 Throttle.prototype.hasCapacity = function() {
   // make requestTimes `this.rate` long. Oldest request will be 0th index
   if (this._requestTimes.length > this.rate) {
-    this._requestTimes = _.castArray(_.last(this._requestTimes, this.rate));
+    this._requestTimes = _.castArray(_.last(this._requestTimes, this.rate))
   }
   return (
     // not paused
@@ -85,8 +85,8 @@ Throttle.prototype.hasCapacity = function() {
     ((Date.now() - this._requestTimes[0]) > this.ratePer) &&
     // something waiting in the throttle
     (this._buffer.length)
-  );
-};
+  )
+}
 
 /**
  * ## cycle
@@ -101,17 +101,17 @@ Throttle.prototype.hasCapacity = function() {
  * @returns null
  */
 Throttle.prototype.cycle = function(fn) {
-  var throttle = this;
+  var throttle = this
 
-  clearTimeout(throttle._timeout);
+  clearTimeout(throttle._timeout)
   if (fn) {
-    throttle._buffer.push(fn);
+    throttle._buffer.push(fn)
   }
   // fire requests
   while (throttle.hasCapacity()) {
-    throttle._buffer.shift()();
-    throttle._requestTimes.push(Date.now());
-    throttle._current += 1;
+    throttle._buffer.shift()()
+    throttle._requestTimes.push(Date.now())
+    throttle._current += 1
   }
 
 
@@ -134,10 +134,10 @@ Throttle.prototype.cycle = function(fn) {
     (throttle._current < throttle.concurrent)
   ) {
     throttle._timeout = setTimeout(function() {
-      throttle.cycle();
-    }, throttle.ratePer - (Date.now() - throttle._requestTimes[0]));
+      throttle.cycle()
+    }, throttle.ratePer - (Date.now() - throttle._requestTimes[0]))
   }
-};
+}
 
 /**
  * ## bindPlugin
