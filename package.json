@@ -24,13 +24,15 @@
   },
   "homepage": "http://leviwheatcroft.github.io/superagent-throttle/docs/index.js.html",
   "dependencies": {
-    "lodash": "^4.11.1"
+    "lodash": "^4.11.1",
+    "superagent": "^1.8.3"
   },
   "devDependencies": {
     "docker": "^0.2.14",
     "mocha": "^2.4.5",
     "mocha-jshint": "^2.3.1",
     "node-readme": "^0.1.9",
+    "superagent-mocker": "^0.4.0",
     "unit.js": "^2.0.0"
   }
 }
