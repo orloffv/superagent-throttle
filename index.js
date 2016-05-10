@@ -33,12 +33,12 @@ Throttle = function(options) {
       _requestTimes: [0],
       _current: 0,
       _buffer: [],
+      _serials: {},
       _timeout: false
     },
     defaults,
     options
   ))
-  this.bindPlugin()
 }
 
 /**
@@ -100,20 +100,47 @@ Throttle.prototype.hasCapacity = function() {
  *   nature of fn to store arguments et cetera
  * @returns null
  */
-Throttle.prototype.cycle = function(fn) {
-  var throttle = this
-
-  clearTimeout(throttle._timeout)
-  if (fn) {
-    throttle._buffer.push(fn)
+Throttle.prototype.cycle = function(buffered, uri) {
+  let throttle = this
+  if (_.isString(buffered)) {
+    uri = buffered
+    buffered = undefined
   }
+  if (uri) {
+    throttle._serials[uri] = false
+  }
+  if (buffered) {
+    throttle._buffer.push(buffered)
+  }
+  clearTimeout(throttle._timeout)
+
   // fire requests
   while (throttle.hasCapacity()) {
-    throttle._buffer.shift()()
+
+
+    // hasCapacity might return true when all buffered requests are
+    // serialised
+    let idx = _.findIndex(throttle._buffer, function(buffered) {
+      return !buffered.uri || !throttle._serials[buffered.uri]
+    })
+    
+    console.log(idx)
+    let buffered = throttle._buffer.splice(idx, 1)[0]
+    if (buffered.uri) {
+      throttle._serials[buffered.uri] = true
+    }
+    // attend to the throttle once we get a response
+    buffered.request.on('end', function() {
+      throttle._current -= 1
+      throttle.cycle(uri)
+    })
+    buffered.request.throttled.apply(
+      buffered.request,
+      buffered.arguments
+    )
     throttle._requestTimes.push(Date.now())
     throttle._current += 1
   }
-
 
   if (
     // if:
@@ -140,40 +167,31 @@ Throttle.prototype.cycle = function(fn) {
 }
 
 /**
- * ## bindPlugin
- * create an instance method called `plugin` it needs an enclosure like this to
- * store a reference to the throttle, otherwise the plugin, when called by
- * superagent, will have no reference to itself.
- * this should be called by the class constructor
+ * ## plugin
  *
  * `superagent` `use` function should refer to this plugin method a la
- * `.use(throttle.plugin)`
+ * `.use(throttle.plugin())`
  *
  * @method
+ * @param {string} uri any string is ok, uri as in namespace
  * @returns null
  */
-Throttle.prototype.bindPlugin = function() {
-  var throttle = this
-  this.plugin = function(request) {
+Throttle.prototype.plugin = function(uri) {
+  let throttle = this
+  return function(request) {
     request.throttle = throttle
     // replace request.end
     request.throttled = request.end
     request.end = function() {
-      var args
-      args = arguments
-      // this anon function will be placed in the throttle
-      request.throttle.cycle(function() {
-        request.throttled.apply(request, args)
+      request.throttle.cycle({
+        request: request,
+        arguments: arguments,
+        uri: uri
       })
       return request
     }
-    // attend to the throttle once we get a response
-    request.on('end', function() {
-      request.throttle._current -= 1
-      request.throttle.cycle()
-    })
-    return request
   }
+  return request
 }
 
 module.exports = Throttle
