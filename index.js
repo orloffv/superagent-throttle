@@ -64,28 +64,38 @@ Throttle.prototype.set = function(options, value) {
 }
 
 /**
- * ## hasCapacity
- * checks whether instance has available capacity either in rate or in
- * concurrency
+ * ## next
+ * checks whether instance has available capacity and returns index
+ * of correct request
  *
  * @method
  * @returns {Boolean}
  */
-Throttle.prototype.hasCapacity = function() {
-  // make requestTimes `this.rate` long. Oldest request will be 0th index
-  if (this._requestTimes.length > this.rate) {
-    this._requestTimes = _.castArray(_.last(this._requestTimes, this.rate))
+Throttle.prototype.next = function() {
+  let throttle = this
+  // make requestTimes `throttle.rate` long. Oldest request will be 0th index
+  if (throttle._requestTimes.length > throttle.rate) {
+    throttle._requestTimes = _.castArray(_.last(throttle._requestTimes, throttle.rate))
   }
-  return (
+  if (
     // not paused
-    (this.active) &&
+    !(throttle.active) ||
     // not at concurrency limit
-    (this._current < this.concurrent) &&
+    !(throttle._current < throttle.concurrent) ||
     // less than `ratePer`
-    ((Date.now() - this._requestTimes[0]) > this.ratePer) &&
+    !((Date.now() - throttle._requestTimes[0]) > throttle.ratePer) ||
     // something waiting in the throttle
-    (this._buffer.length)
-  )
+    !(throttle._buffer.length)
+  ) {
+    return false
+  }
+  let idx = _.findIndex(throttle._buffer, function(buffered) {
+    return !buffered.uri || !throttle._serials[buffered.uri]
+  })
+  if (idx === -1) {
+    return false
+  }
+  return throttle._buffer.splice(idx, 1)[0]
 }
 
 /**
@@ -113,19 +123,11 @@ Throttle.prototype.cycle = function(buffered, uri) {
     throttle._buffer.push(buffered)
   }
   clearTimeout(throttle._timeout)
+  console.log(throttle._serials)
 
   // fire requests
-  while (throttle.hasCapacity()) {
-
-
-    // hasCapacity might return true when all buffered requests are
-    // serialised
-    let idx = _.findIndex(throttle._buffer, function(buffered) {
-      return !buffered.uri || !throttle._serials[buffered.uri]
-    })
-    
-    console.log(idx)
-    let buffered = throttle._buffer.splice(idx, 1)[0]
+  // reuse of variable is a bit naughty
+  while (buffered = throttle.next()) {
     if (buffered.uri) {
       throttle._serials[buffered.uri] = true
     }
@@ -133,6 +135,9 @@ Throttle.prototype.cycle = function(buffered, uri) {
     buffered.request.on('end', function() {
       throttle._current -= 1
       throttle.cycle(uri)
+      if (buffered.uri) {
+        throttle._serials[buffered.uri] = false
+      }
     })
     buffered.request.throttled.apply(
       buffered.request,
