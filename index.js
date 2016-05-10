@@ -41,6 +41,8 @@ Throttle = function(options) {
   ))
 }
 
+
+
 /**
  * ## set
  * update options on instance
@@ -75,7 +77,10 @@ Throttle.prototype.next = function() {
   let throttle = this
   // make requestTimes `throttle.rate` long. Oldest request will be 0th index
   if (throttle._requestTimes.length > throttle.rate) {
-    throttle._requestTimes = _.castArray(_.last(throttle._requestTimes, throttle.rate))
+    throttle._requestTimes = _.castArray(_.last(
+      throttle._requestTimes,
+      throttle.rate
+    ))
   }
   if (
     // not paused
@@ -97,6 +102,19 @@ Throttle.prototype.next = function() {
   }
   return throttle._buffer.splice(idx, 1)[0]
 }
+Throttle.prototype.serial = function(uri, state) {
+  let serials = this._serials
+  if (_.isObject(uri)) {
+    uri = uri.uri
+  }
+  if (uri === undefined) {
+    return
+  }
+  if (state === undefined) {
+    return serials[uri]
+  }
+  serials[uri] = state
+}
 
 /**
  * ## cycle
@@ -112,36 +130,29 @@ Throttle.prototype.next = function() {
  */
 Throttle.prototype.cycle = function(buffered, uri) {
   let throttle = this
+  let next
   if (_.isString(buffered)) {
     uri = buffered
     buffered = undefined
   }
-  if (uri) {
-    throttle._serials[uri] = false
-  }
+  throttle.serial(uri, false)
   if (buffered) {
     throttle._buffer.push(buffered)
   }
   clearTimeout(throttle._timeout)
-  console.log(throttle._serials)
 
   // fire requests
-  // reuse of variable is a bit naughty
-  while (buffered = throttle.next()) {
-    if (buffered.uri) {
-      throttle._serials[buffered.uri] = true
-    }
+  while (next = throttle.next()) {
+    throttle.serial(next, true)
+    next.request.serial = next.uri
     // attend to the throttle once we get a response
-    buffered.request.on('end', function() {
+    next.request.on('end', function() {
       throttle._current -= 1
-      throttle.cycle(uri)
-      if (buffered.uri) {
-        throttle._serials[buffered.uri] = false
-      }
+      throttle.cycle(this.serial)
     })
-    buffered.request.throttled.apply(
-      buffered.request,
-      buffered.arguments
+    next.request.throttled.apply(
+      next.request,
+      next.arguments
     )
     throttle._requestTimes.push(Date.now())
     throttle._current += 1

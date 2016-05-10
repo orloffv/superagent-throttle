@@ -15,6 +15,7 @@ let throttle = new Throttle({
   concurrent: 4
 })
 
+
 _.each(_.range(1, 10), function(iteration) {
   var width = 100 + iteration
   request
