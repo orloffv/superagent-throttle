@@ -2,56 +2,34 @@
 const request       = require('superagent')
 const _             = require('lodash')
 const Throttle      = require('../index')
-var test = require('unit.js')
-//Before tests
-var mock = require('superagent-mocker')(request)
+var test            = require('unit.js')
 
-mock.timeout = function() {
-  return Math.floor(Math.random() * 2000)
-}
-mock.timeout = 500
 var throttle = new Throttle({
   // start unpaused
   active: true,
   // send max 5 requests every `ratePer` ms
-  rate: 5,
+  rate: 10,
   // send max `rate` requests every 10000 ms
   ratePer: 6000,
   // max 2 requests should run concurrently
   concurrent: 3
 })
 
-mock.get('/normal/:id', function(req) {
-  return {
-    id: req.params.id,
-    content: 'normal',
-    headers: req.headers
-  };
-});
-mock.get('/serial/:id', function(req) {
-  return {
-    id: req.params.id,
-    content: 'serial',
-    headers: req.headers
-  };
-});
-
-mock.timeout = 500
-_.each(_.range(10), function(count) {
+_.times(10, function(idx) {
   request
-  .get('/normal/' + count)
-  .use(throttle.plugin())
-  .end(function(err, data) {
-    console.log(data)
-  })
-})
-mock.timeout = 1000
-_.each(_.range(10), function(count) {
-  request
-  .get('/serial/' + count)
+  .get('http://jsonplaceholder.typicode.com/posts')
   .use(throttle.plugin('test'))
   .end(function(err, data) {
-    console.log(data)
+    console.log('serial: ' + idx)
   })
 })
+_.times(10, function(idx) {
+  request
+  .get('http://jsonplaceholder.typicode.com/posts')
+  .use(throttle.plugin())
+  .end(function(err, data) {
+    console.log('normal: ' + idx)
+  })
+})
+
 

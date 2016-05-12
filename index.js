@@ -67,8 +67,7 @@ Throttle.prototype.set = function(options, value) {
 
 /**
  * ## next
- * checks whether instance has available capacity and returns index
- * of correct request
+ * checks whether instance has available capacity and calls throttle.send()
  *
  * @method
  * @returns {Boolean}
@@ -83,37 +82,53 @@ Throttle.prototype.next = function() {
     ))
   }
   if (
-    // not paused
+    // paused
     !(throttle.active) ||
-    // not at concurrency limit
-    !(throttle._current < throttle.concurrent) ||
+    // at concurrency limit
+    (throttle._current > throttle.concurrent) ||
     // less than `ratePer`
-    !((Date.now() - throttle._requestTimes[0]) > throttle.ratePer) ||
+    throttle._isRateBound() ||
     // something waiting in the throttle
     !(throttle._buffer.length)
   ) {
     return false
   }
-  let idx = _.findIndex(throttle._buffer, function(buffered) {
-    return !buffered.uri || !throttle._serials[buffered.uri]
+  let idx = _.findIndex(throttle._buffer, function(request) {
+    return !request.serial || !throttle._serials[request.serial]
   })
   if (idx === -1) {
+    throttle._isSerialBound = true
     return false
   }
-  return throttle._buffer.splice(idx, 1)[0]
+  throttle.send(throttle._buffer.splice(idx, 1)[0])
+  return true
 }
-Throttle.prototype.serial = function(uri, state) {
+
+/**
+ * ## serial
+ *
+ */
+Throttle.prototype.serial = function(serial, state) {
   let serials = this._serials
-  if (_.isObject(uri)) {
-    uri = uri.uri
+  let throttle = this
+  if (_.isObject(serial)) {
+    serial = serial.serial
   }
-  if (uri === undefined) {
+  if (serial === false) {
     return
   }
   if (state === undefined) {
-    return serials[uri]
+    return serials[serial]
   }
-  serials[uri] = state
+  if (state === false) {
+    throttle._isSerialBound = false
+  }
+  serials[serial] = state
+
+}
+
+Throttle.prototype._isRateBound = function() {
+  return ((Date.now() - this._requestTimes[0]) < this.ratePer)
 }
 
 /**
@@ -124,62 +139,52 @@ Throttle.prototype.serial = function(uri, state) {
  *    available rate)
  *  - some request has ended (may have available concurrency)
  *
- * @param {Function} [fn] - a function which fires a request, use the enclosed
- *   nature of fn to store arguments et cetera
+ * @param {Object} [buffered] key value object
+ * @param {Request} buffered.request the superagent request
+ * @param {arguments} buffered.arguments passed to request.end()
+ * @param {String} uri
  * @returns null
  */
-Throttle.prototype.cycle = function(buffered, uri) {
+Throttle.prototype.cycle = function(request) {
   let throttle = this
-  let next
-  if (_.isString(buffered)) {
-    uri = buffered
-    buffered = undefined
-  }
-  throttle.serial(uri, false)
-  if (buffered) {
-    throttle._buffer.push(buffered)
+
+  if (request) {
+    throttle._buffer.push(request)
   }
   clearTimeout(throttle._timeout)
 
   // fire requests
-  while (next = throttle.next()) {
-    throttle.serial(next, true)
-    next.request.serial = next.uri
-    // attend to the throttle once we get a response
-    next.request.on('end', function() {
-      throttle._current -= 1
-      throttle.cycle(this.serial)
-    })
-    next.request.throttled.apply(
-      next.request,
-      next.arguments
-    )
-    throttle._requestTimes.push(Date.now())
-    throttle._current += 1
+  // throttle.next will return false if there's no capacity or throttle is
+  // drained
+  while (throttle.next()) {
+
   }
 
-  if (
-    // if:
-    //  - no more throttled items
-    //  - paused
-    //  - waiting for concurrency
-    // then: do nothing, cycle will be called again when these states change.
-    (throttle._buffer.length === 0) ||
-    (!throttle.active) ||
-    (throttle._current >= throttle.concurrent)
-  ) {
-    return
-  } else if (
-    // if:
-    //  - limited by rate
-    // then:
-    //  - a timer must be set
-    (throttle._current < throttle.concurrent)
-  ) {
+  // if bound by rate, set timeout to reassess later.
+  if (throttle._isRateBound()) {
     throttle._timeout = setTimeout(function() {
       throttle.cycle()
     }, throttle.ratePer - (Date.now() - throttle._requestTimes[0]))
   }
+}
+
+/**
+ * ## send
+ *
+ *
+ */
+Throttle.prototype.send = function(request) {
+  let throttle = this
+  throttle.serial(request, true)
+  // attend to the throttle once we get a response
+  request.on('end', function() {
+    throttle._current -= 1
+    throttle.serial(this, false)
+    throttle.cycle()
+  })
+  request.throttled.call(request)
+  throttle._requestTimes.push(Date.now())
+  throttle._current += 1
 }
 
 /**
@@ -189,25 +194,27 @@ Throttle.prototype.cycle = function(buffered, uri) {
  * `.use(throttle.plugin())`
  *
  * @method
- * @param {string} uri any string is ok, uri as in namespace
+ * @param {string} serial any string is ok, it's just a namespace
  * @returns null
  */
-Throttle.prototype.plugin = function(uri) {
+Throttle.prototype.plugin = function(serial) {
   let throttle = this
   return function(request) {
     request.throttle = throttle
+    request.serial = serial || false
     // replace request.end
     request.throttled = request.end
-    request.end = function() {
-      request.throttle.cycle({
-        request: request,
-        arguments: arguments,
-        uri: uri
-      })
+    request.end = function(callback) {
+      // the only param passed to .end is the callback, so we can just store
+      // that on the emitter, and don't need to deal any other arguments
+      // passed in
+      request.on('end', callback)
+      // place this request in the queue
+      request.throttle.cycle(request)
       return request
     }
+    return request
   }
-  return request
 }
 
 module.exports = Throttle
