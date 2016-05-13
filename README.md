@@ -30,22 +30,38 @@ A plugin for [superagent](https://github.com/visionmedia/superagent) that
     var Throttle = require('./index');
 
     var throttle = new Throttle({
-      active: true,
-      rate: 5,
-      ratePer: 10000,
-      concurrent: 2
+      active: true,     // set false to pause queue
+      rate: 5,          // how many requests can be sent every `ratePer`
+      ratePer: 10000,   // number of ms in which `rate` requests may be sent
+      concurrent: 2     // how many requests can be sent concurrently
     });
 
     _.each(_.range(1, 15), function(iteration) {
       var width = 100 + iteration;
       request
       .get('http://placekitten.com/' + width + '/100')
-      .use(throttle.plugin)
+      .use(throttle.plugin())
       .end(function(err, res) {
         console.log(err ? err : 'retrieved ' + iteration);
       });
       console.log('added ' + iteration);
     });
+
+## Serialised Sub Queues
+
+When using API's to update a client, you may want some serialised requests which
+still count towards your rate limit, but do not block other requests. You can
+do that by passing a uri (not necessarily a valid url) to `throttle.plugin`.
+
+    let endpoint = 'http://example.com/endpoint'
+    request
+    .get(endpoint)
+    .set('somedata': somedata)
+    .use(throttle.plugin(endpoint))
+    .end(callback)
+
+it's common to use an endpoint for the uri, simply to serialise requests to that
+endpoint without interfering with requests to other endpoints
 
 ## Options
 
