@@ -52,6 +52,8 @@ Throttle = function(options) {
     defaults,
     options
   ))
+  // bind plugin to instance, so when it's called with the old
+  // `.use(throttle.plugin)` syntax plugin function will have reference to this
   this.plugin = _.bind(this.plugin, this)
 }
 
@@ -118,7 +120,7 @@ Throttle.prototype.next = function() {
 
 /**
  * ## serial
- * updates throttle._serials and throttle._isRateBound
+ * updates throttle.\_serials and throttle.\_isRateBound
  *
  * serial subthrottles allow some requests to be serialised, whilst maintaining
  * their place in the queue. The _serials structure keeps track of what serial
