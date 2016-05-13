@@ -10,30 +10,28 @@ let throttle = new Throttle({
   // send max 5 requests every `ratePer` ms
   rate: 5,
   // send max `rate` requests every 10000 ms
-  ratePer: 10000,
+  ratePer: 4000,
   // max 2 requests should run concurrently
   concurrent: 4
 })
 
-
-_.each(_.range(1, 10), function(iteration) {
-  var width = 100 + iteration
+_.times(10, function(idx) {
   request
-  .get('http://placekitten.com/' + width + '/100')
-  .use(throttle.plugin('test'))
+  .get('placekitten.com/100/' + (100 + idx))
+  .use(throttle.plugin('foo'))
   .end(function(err, res) {
-    console.log(err ? err : 'serial ' + iteration)
+    console.log(err ? err : 'serial ' + idx)
   })
-  console.log('added ' + iteration)
+  console.log('added ' + idx)
 })
-_.each(_.range(1, 15), function(iteration) {
-  var width = 100 + iteration
+_.times(10, function(idx) {
   request
-  .get('http://placekitten.com/' + width + '/100')
+  .get('placekitten.com/100/' + (100 + idx))
   .use(throttle.plugin())
   .end(function(err, res) {
-    console.log(err ? err : 'retrieved ' + iteration)
+    console.log(err ? err : 'res ' + idx)
   })
-  console.log('added ' + iteration)
+  console.log('added ' + idx)
 })
+
 
