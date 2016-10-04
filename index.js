@@ -1,5 +1,5 @@
 'use strict'
-const _             = require('lodash')
+//const _             = require('lodash')
 const EventEmitter  = require('events')
 
 /**
@@ -28,42 +28,57 @@ let defaults = {
 class Throttle extends EventEmitter {
   constructor(options) {
     super()
-    this.options(_.extend(
-      // instance properties
-      {
-        _requestTimes: [0],
-        _current: 0,
-        _buffer: [],
-        _serials: {},
-        _timeout: false
-      },
-      defaults,
-      options
-    ))
-    // bind plugin to instance, so when it's called with the old
-    // `.use(throttle.plugin)` syntax plugin function will have reference to this
-    this.plugin = _.bind(this.plugin, this)
+    // instance properties
+    this._options({
+      _requestTimes: [0],
+      _current: 0,
+      _buffer: [],
+      _serials: {},
+      _timeout: false
+    })
+    this._options(defaults)
+    this._options(options)
+  }
+
+  /**
+   * ## _options
+   * updates options on instance
+   *
+   * @method
+   * @param {Object} options - key value object
+   * @returns null
+   */
+  _options(options) {
+    for (let property in options) {
+      if (options.hasOwnProperty(property)) {
+        this[property] = options[property]
+      }
+    }
   }
 
   /**
    * ## options
-   * update options on instance
+   * thin wrapper for _options,
+   *  * calls `this.cycle()`
+   *  * adds alternate syntax
    *
    * alternate syntax:
    * throttle.options('active', true)
    * throttle.options({active: true})
    *
    * @method
-   * @param {String|Object} options - either key value object or keyname
+   * @param {Object} options - either key value object or keyname
    * @param {Mixed} [value] - value for key
    * @returns null
    */
   options(options, value) {
-    if (_.isString(options) && value) {
-      options = {}
-      options[options] = value
+    if (
+      (typeof options === 'string') &&
+      (value)
+    ) {
+      options = { options: value }
     }
-    _.extend(this, options)
+    this._options(options)
     this.cycle()
   }
 
@@ -76,10 +91,8 @@ class Throttle extends EventEmitter {
   next() {
     let throttle = this
     // make requestTimes `throttle.rate` long. Oldest request will be 0th index
-    throttle._requestTimes = _.slice(
-      throttle._requestTimes,
-      throttle.rate * -1
-    )
+    throttle._requestTimes =
+      throttle._requestTimes.slice(throttle.rate * -1)
 
     if (
       // paused
@@ -93,7 +106,7 @@ class Throttle extends EventEmitter {
     ) {
       return false
     }
-    let idx = _.findIndex(throttle._buffer, function(request) {
+    let idx = throttle._buffer.findIndex((request) => {
       return !request.serial || !throttle._serials[request.serial]
     })
     if (idx === -1) {
@@ -176,11 +189,12 @@ class Throttle extends EventEmitter {
 
     // if bound by rate, set timeout to reassess later.
     if (throttle._isRateBound()) {
-      // defined rate,
+      let timeout
+      // defined rate
+      timeout = throttle.ratePer
       // less ms elapsed since oldest request
+      timeout -= (Date.now() - throttle._requestTimes[0])
       // + 1 ms to ensure you don't fire a request exactly ratePer ms later
-      let timeout =
-        throttle.ratePer - (Date.now() - throttle._requestTimes[0]) + 1
       throttle._timeout = setTimeout(function() {
         throttle.cycle()
       }, timeout)
@@ -207,7 +221,7 @@ class Throttle extends EventEmitter {
       ) {
         this.emit('drained')
       }
-      throttle.serial(this, false)
+      throttle.serial(request, false)
       throttle.cycle()
     })
 
@@ -232,7 +246,8 @@ class Throttle extends EventEmitter {
    */
   plugin(serial) {
     let throttle = this
-    let patch = function(request) {
+    //let patch = function(request) {
+    return (request) => {
       request.throttle = throttle
       request.serial = serial || false
       // replace request.end
@@ -246,7 +261,7 @@ class Throttle extends EventEmitter {
       }
       return request
     }
-    return _.isObject(serial) ? patch(serial) : patch
+    //return _.isObject(serial) ? patch(serial) : patch
   }
 }
 

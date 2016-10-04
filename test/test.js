@@ -18,9 +18,10 @@ let respond
 mockServer = (delay, jitter) => {
   return http.createServer(
     (request, response) => {
-      if (!delay && !jitter) return respond(response)
+      if (!delay) return respond(response)
+      if (!jitter) jitter = 0
       setTimeout(
-        respond,
+        () => respond(response),
         Math.floor((Math.random() * jitter) + delay)
       )
     }
@@ -56,7 +57,8 @@ log = function(prefix) {
       _.padStart(rate, 3, ' '),
       ' | queued: ',
       _.padStart(request.throttle._buffer.length, 3, ' '),
-      ' |'
+      ' | ',
+      request.serial
     ].join(''))
   }
 }
@@ -118,8 +120,8 @@ describe('throttle', () => {
 
     throttle.on('drained', () => {
       let result = highest()
-      assert(result.maxConcurrent == 2, 'highest concurrency was 2')
       server.close()
+      assert(result.maxConcurrent == 2, 'highest concurrency was 2')
       done()
     })
   })
@@ -135,8 +137,8 @@ describe('throttle', () => {
     })
     throttle.on('sent', highest)
     throttle.on('received', highest)
-    // throttle.on('sent', log('sent'))
-    // throttle.on('received', log('rcvd'))
+    throttle.on('sent', log('sent'))
+    throttle.on('received', log('rcvd'))
 
 
     _.times(10, function(idx) {
@@ -148,8 +150,8 @@ describe('throttle', () => {
 
     throttle.on('drained', () => {
       let result = highest()
-      assert(result.maxRate == 2, 'highest rate was 2')
       server.close()
+      assert(result.maxRate == 2, 'highest rate was 2')
       done()
     })
   })
@@ -178,8 +180,46 @@ describe('throttle', () => {
 
     throttle.on('drained', () => {
       let result = highest()
-      assert.isOk(true, 'has thrown error?')
       server.close()
+      assert.isOk(true, 'has thrown error?')
+      done()
+    })
+  })
+  
+  it('should allow serialised queues', (done) => {
+    let server = mockServer(1000)
+    let throttle = new Throttle({
+      active: true,
+      rate: 10,
+      ratePer: 5000,
+      concurrent: 2
+    })
+    throttle.on('sent', log('sent'))
+    throttle.on('received', log('rcvd'))
+
+    let uris = [
+      undefined,
+      'someUri',
+      'someUri',
+      'someUri',
+      undefined,
+      undefined,
+      undefined,
+      undefined
+    ]
+    let responses = []
+
+    _.each(uris, (uri) => {
+      request.get('http://localhost:3003')
+      .use(throttle.plugin(uri))
+      .end((err, res) => responses.push(res.request.serial))
+    })
+
+    throttle.on('drained', () => {
+      // responses should not have two consecutive 'someUri'
+          
+      server.close()
+      assert.isOk(true, 'has thrown error?')
       done()
     })
   })
