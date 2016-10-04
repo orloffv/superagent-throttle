@@ -1,10 +1,10 @@
 {
   "name": "superagent-throttle",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A plugin for superagent that throttles requests.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha -R list",
+    "test": "./node_modules/mocha/bin/mocha -t 10000",
     "docs": "./node_modules/docker/docker -o ./docs -x .README.md,README.md,test,node_modules,notes,docs,.git",
     "readme": "node ./node_modules/.bin/node-readme",
     "version": "npm run readme && git add README.md"
@@ -25,13 +25,13 @@
   },
   "homepage": "http://leviwheatcroft.github.io/superagent-throttle/docs/index.js.html",
   "dependencies": {
-    "debug": "^2.2.0",
-    "lodash": "^4.11.1",
     "superagent": "^1.8.3"
   },
   "devDependencies": {
+    "lodash": "^4.11.1",
+    "chai": "^3.5.0",
     "docker": "^0.2.14",
-    "mocha": "^2.4.5",
+    "mocha": "^2.5.3",
     "mocha-jshint": "^2.3.1",
     "node-readme": "^0.1.9",
     "unit.js": "^2.0.0"
