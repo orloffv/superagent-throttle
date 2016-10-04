@@ -195,6 +195,7 @@ class Throttle extends EventEmitter {
       // less ms elapsed since oldest request
       timeout -= (Date.now() - throttle._requestTimes[0])
       // + 1 ms to ensure you don't fire a request exactly ratePer ms later
+      timeout += 1
       throttle._timeout = setTimeout(function() {
         throttle.cycle()
       }, timeout)

@@ -1,4 +1,12 @@
 'use strict'
+/**
+ * ## tests
+ *
+ * I've never written any tests before, so I'm sure there's room for
+ * criticism here.
+ *
+ */
+
 const request       = require('superagent')
 const _             = require('lodash')
 const assert        = require('chai').assert
@@ -15,6 +23,12 @@ let max
 let mockServer
 let respond
 
+/**
+ * ## mockServer
+ *
+ * a very fancy no-dep http server that just returns 'ok' to every request,
+ * it seems to take about 3ms to do the response on my clunky dev machine
+ */
 mockServer = (delay, jitter) => {
   return http.createServer(
     (request, response) => {
@@ -33,6 +47,11 @@ respond = (response) => {
   response.end()
 }
 
+/**
+ * ## log
+ *
+ * a helper to write pretty tables when attached to Throttle events
+ */
 log = function(prefix) {
   let count = 0
   let start = Date.now()
@@ -63,6 +82,11 @@ log = function(prefix) {
   }
 }
 
+/**
+ * ## max
+ *
+ * collates various maximums, useful for tests
+ */
 max = function() {
   let count = 0
   let maxRate = 0
@@ -137,8 +161,8 @@ describe('throttle', () => {
     })
     throttle.on('sent', highest)
     throttle.on('received', highest)
-    throttle.on('sent', log('sent'))
-    throttle.on('received', log('rcvd'))
+    // throttle.on('sent', log('sent'))
+    // throttle.on('received', log('rcvd'))
 
 
     _.times(10, function(idx) {
@@ -185,7 +209,19 @@ describe('throttle', () => {
       done()
     })
   })
-  
+
+  /**
+   * ## it should allow serialised queues
+   *
+   * this test is pretty ugly, but I can't think of a better way for the time
+   * being. Basically there's an array of serial identifiers, which are attached
+   * to requests, then as they come back those identifiers are stored, and teh
+   * test is passed if no serialised requests come back consecutively.
+   *
+   * a better test would ensure that no two serial requests for the same uri
+   * are requested simultaneously. But for now this will do.
+   *
+   */
   it('should allow serialised queues', (done) => {
     let server = mockServer(1000)
     let throttle = new Throttle({
@@ -194,8 +230,9 @@ describe('throttle', () => {
       ratePer: 5000,
       concurrent: 2
     })
-    throttle.on('sent', log('sent'))
-    throttle.on('received', log('rcvd'))
+    // throttle.on('sent', log('sent'))
+    // throttle.on('received', log('rcvd'))
+
 
     let uris = [
       undefined,
@@ -212,14 +249,20 @@ describe('throttle', () => {
     _.each(uris, (uri) => {
       request.get('http://localhost:3003')
       .use(throttle.plugin(uri))
-      .end((err, res) => responses.push(res.request.serial))
+      .end((err, res) => responses.push(request.serial))
     })
 
     throttle.on('drained', () => {
       // responses should not have two consecutive 'someUri'
-          
+      let consecutive = _.some(responses, (response, idx) => {
+        if (idx == 0) return
+        if (
+          (responses[idx - 1] == 'someUri') &&
+          (responses[idx] == 'someUri')
+        ) return true
+      })
       server.close()
-      assert.isOk(true, 'has thrown error?')
+      assert.isOk(!consecutive, 'requests have not been serialised')
       done()
     })
   })
