@@ -1,13 +1,10 @@
 'use strict'
-//const _             = require('lodash')
 const EventEmitter  = require('events')
 
 /**
  * ## default options
  */
 let defaults = {
-  // not sure if `name` is used anymore
-  name: 'default',
   // start unpaused ?
   active: true,
   // requests per `ratePer` ms
@@ -58,7 +55,8 @@ class Throttle extends EventEmitter {
 
   /**
    * ## options
-   * thin wrapper for _options,
+   * thin wrapper for _options
+   *
    *  * calls `this.cycle()`
    *  * adds alternate syntax
    *
@@ -167,6 +165,7 @@ class Throttle extends EventEmitter {
   /**
    * ## cycle
    * an iterator of sorts. Should be called when
+   *
    *  - something added to throttle (check if it can be sent immediately)
    *  - `ratePer` ms have elapsed since nth last call where n is `rate` (may have
    *    available rate)
@@ -194,7 +193,7 @@ class Throttle extends EventEmitter {
       timeout = throttle.ratePer
       // less ms elapsed since oldest request
       timeout -= (Date.now() - throttle._requestTimes[0])
-      // + 1 ms to ensure you don't fire a request exactly ratePer ms later
+      // plus 1 ms to ensure you don't fire a request exactly ratePer ms later
       timeout += 1
       throttle._timeout = setTimeout(function() {
         throttle.cycle()
@@ -210,21 +209,26 @@ class Throttle extends EventEmitter {
    */
   send(request) {
     let throttle = this
+    let end
     throttle.serial(request, true)
-    // attend to the throttle once we get a response
-    request.on('end', () => {
+
+    // declare callback within this enclosure, for access to throttle & request
+    end = () => {
       throttle._current -= 1
-      this.emit('received', request)
+      throttle.emit('received', request)
 
       if (
         (!throttle._buffer.length) &&
         (!throttle._current)
       ) {
-        this.emit('drained')
+        throttle.emit('drained')
       }
       throttle.serial(request, false)
       throttle.cycle()
-    })
+    }
+
+    request.on('end', end)
+    request.on('error', end)
 
 
     // original `request.end` was stored at `request.throttled`

@@ -120,6 +120,26 @@ max = function() {
 
 describe('throttle', () => {
 
+  it ('should clear errored requests (issue #6)', (done) => {
+    let throttle = new Throttle({
+      rate: 10000, // how many requests can be sent every `ratePer`
+      ratePer: 10000, // number of ms in which `rate` requests may be sent
+      concurrent: 2 // how many requests can be sent concurrently
+    })
+
+    // .on('sent', log('sent'))
+    // .on('received', log('received'))
+
+    // this request will throw error because server is inactive
+    request.get('http://localhost:3003').use(throttle.plugin()).end(() => {
+      assert(throttle._current == 0, 'request has not been cleared')
+      done()
+    })
+
+
+
+  })
+
   it('should work with low concurrency', (done) => {
     let server = mockServer()
     let highest = max()
@@ -288,7 +308,10 @@ describe('throttle', () => {
     let instance = request.get('http://localhost:3003')
     let returned = instance.use(throttle.plugin())
     assert(instance === returned, 'instance not returned')
+    server.close()
   })
+
+
 })
 
 
