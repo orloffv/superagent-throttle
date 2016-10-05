@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>test.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../doc-style.css" />
+  <script src="../doc-filelist.js"></script>
+  <script>
+    var relativeDir = "../", thisFile = "test/test.js", defaultSidebar = true;
+  </script>
+  <script src="../doc-script.js"></script>
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h2">
+        <a href="#tests">tests</a>
+      </div>
+      <div class="heading h2">
+        <a href="#mockserver">mockServer</a>
+      </div>
+      <div class="heading h2">
+        <a href="#log">log</a>
+      </div>
+      <div class="heading h2">
+        <a href="#max">max</a>
+      </div>
+      <div class="heading h2">
+        <a href="#it%20should%20allow%20serialised%20queues">it should allow serialised queues</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+          <h1>test.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="s1">&#39;use strict&#39;</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="tests">
+  <h2>
+    <a href="#tests" name="tests" class="pilcrow">&#182;</a>
+    tests
+  </h2>
+</div>
+
+  </div>
+  <div class="body"><p>I've never written any tests before, so I'm sure there's room for
+criticism here.</p>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+
+<span class="kr">const</span> <span class="nx">request</span>       <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;superagent&#39;</span><span class="p">)</span>
+<span class="kr">const</span> <span class="nx">_</span>             <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;lodash&#39;</span><span class="p">)</span>
+<span class="kr">const</span> <span class="nx">assert</span>        <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;chai&#39;</span><span class="p">).</span><span class="nx">assert</span>
+<span class="kr">const</span> <span class="nx">Throttle</span>      <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../index&#39;</span><span class="p">)</span>
+<span class="kr">const</span> <span class="nx">http</span>          <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;http&#39;</span><span class="p">)</span>
+<span class="nx">require</span><span class="p">(</span><span class="s1">&#39;mocha-jshint&#39;</span><span class="p">)({</span>
+  <span class="nx">paths</span><span class="o">:</span> <span class="p">[</span>
+    <span class="s1">&#39;index.js&#39;</span>
+  <span class="p">]</span>
+<span class="p">})</span>
+
+<span class="kd">let</span> <span class="nx">log</span>
+<span class="kd">let</span> <span class="nx">max</span>
+<span class="kd">let</span> <span class="nx">mockServer</span>
+<span class="kd">let</span> <span class="nx">respond</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="mockserver">
+  <h2>
+    <a href="#mockserver" name="mockserver" class="pilcrow">&#182;</a>
+    mockServer
+  </h2>
+</div>
+
+  </div>
+  <div class="body"><p>a very fancy no-dep http server that just returns 'ok' to every request,
+it seems to take about 3ms to do the response on my clunky dev machine</p>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">mockServer</span> <span class="o">=</span> <span class="p">(</span><span class="nx">delay</span><span class="p">,</span> <span class="nx">jitter</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nx">createServer</span><span class="p">(</span>
+    <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">delay</span><span class="p">)</span> <span class="k">return</span> <span class="nx">respond</span><span class="p">(</span><span class="nx">response</span><span class="p">)</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">jitter</span><span class="p">)</span> <span class="nx">jitter</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="nx">setTimeout</span><span class="p">(</span>
+        <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">respond</span><span class="p">(</span><span class="nx">response</span><span class="p">),</span>
+        <span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">((</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="nx">jitter</span><span class="p">)</span> <span class="o">+</span> <span class="nx">delay</span><span class="p">)</span>
+      <span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">).</span><span class="nx">listen</span><span class="p">(</span><span class="mi">3003</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="nx">respond</span> <span class="o">=</span> <span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">response</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+  <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span>
+<span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="log">
+  <h2>
+    <a href="#log" name="log" class="pilcrow">&#182;</a>
+    log
+  </h2>
+</div>
+
+  </div>
+  <div class="body"><p>a helper to write pretty tables when attached to Throttle events</p>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">log</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">prefix</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">count</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="kd">let</span> <span class="nx">start</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span>
+  <span class="k">return</span> <span class="p">(</span><span class="nx">request</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">rate</span>
+    <span class="kd">let</span> <span class="nx">check</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">ratePer</span><span class="p">)</span>
+    <span class="nx">rate</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_requestTimes</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="nx">_</span><span class="p">.</span><span class="nx">findLastIndex</span><span class="p">(</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_requestTimes</span><span class="p">,</span>
+      <span class="p">(</span><span class="nx">date</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="nx">date</span> <span class="o">&lt;</span> <span class="nx">check</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="nx">count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">([</span>
+      <span class="s1">&#39;| &#39;</span><span class="p">,</span>
+      <span class="nx">_</span><span class="p">.</span><span class="nx">padEnd</span><span class="p">(</span><span class="nx">prefix</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">),</span>
+      <span class="s1">&#39;| &#39;</span><span class="p">,</span>
+      <span class="nx">_</span><span class="p">.</span><span class="nx">padStart</span><span class="p">(</span><span class="nx">count</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">),</span>
+      <span class="s1">&#39; | &#39;</span><span class="p">,</span>
+      <span class="nx">_</span><span class="p">.</span><span class="nx">padStart</span><span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">start</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">),</span>
+      <span class="s1">&#39; | conc: &#39;</span><span class="p">,</span>
+      <span class="nx">_</span><span class="p">.</span><span class="nx">padStart</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_current</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">),</span>
+      <span class="s1">&#39; | rate: &#39;</span><span class="p">,</span>
+      <span class="nx">_</span><span class="p">.</span><span class="nx">padStart</span><span class="p">(</span><span class="nx">rate</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">),</span>
+      <span class="s1">&#39; | queued: &#39;</span><span class="p">,</span>
+      <span class="nx">_</span><span class="p">.</span><span class="nx">padStart</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_buffer</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">),</span>
+      <span class="s1">&#39; | &#39;</span><span class="p">,</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">serial</span>
+    <span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">))</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="max">
+  <h2>
+    <a href="#max" name="max" class="pilcrow">&#182;</a>
+    max
+  </h2>
+</div>
+
+  </div>
+  <div class="body"><p>collates various maximums, useful for tests</p>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">max</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">count</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="kd">let</span> <span class="nx">maxRate</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="kd">let</span> <span class="nx">maxConcurrent</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="kd">let</span> <span class="nx">maxBuffer</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="kd">let</span> <span class="nx">start</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span>
+  <span class="k">return</span> <span class="p">(</span><span class="nx">request</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">request</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">let</span> <span class="nx">rate</span>
+      <span class="kd">let</span> <span class="nx">check</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">(</span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">ratePer</span><span class="p">)</span>
+      <span class="nx">rate</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_requestTimes</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="nx">_</span><span class="p">.</span><span class="nx">findLastIndex</span><span class="p">(</span>
+        <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_requestTimes</span><span class="p">,</span>
+        <span class="p">(</span><span class="nx">date</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="nx">date</span> <span class="o">&lt;</span> <span class="nx">check</span><span class="p">)</span>
+      <span class="p">)</span>
+      <span class="nx">count</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">maxConcurrent</span> <span class="o">&lt;</span> <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_current</span><span class="p">)</span>
+        <span class="nx">maxConcurrent</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_current</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">maxRate</span> <span class="o">&lt;</span> <span class="nx">rate</span><span class="p">)</span>
+        <span class="nx">maxRate</span> <span class="o">=</span> <span class="nx">rate</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">maxBuffer</span> <span class="o">&lt;</span> <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_buffer</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span>
+        <span class="nx">maxBuffer</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_buffer</span><span class="p">.</span><span class="nx">length</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="nx">count</span><span class="p">,</span>
+      <span class="nx">maxRate</span><span class="p">,</span>
+      <span class="nx">maxConcurrent</span><span class="p">,</span>
+      <span class="nx">maxBuffer</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="s1">&#39;throttle&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+
+  <span class="nx">it</span> <span class="p">(</span><span class="s1">&#39;should clear errored requests (issue #6)&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">throttle</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Throttle</span><span class="p">({</span>
+      <span class="nx">rate</span><span class="o">:</span> <span class="mi">10000</span><span class="p">,</span> <span class="c1">// how many requests can be sent every `ratePer`</span>
+      <span class="nx">ratePer</span><span class="o">:</span> <span class="mi">10000</span><span class="p">,</span> <span class="c1">// number of ms in which `rate` requests may be sent</span>
+      <span class="nx">concurrent</span><span class="o">:</span> <span class="mi">2</span> <span class="c1">// how many requests can be sent concurrently</span>
+    <span class="p">})</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+</div>
+<p>.on('sent', log('sent'))
+.on('received', log('received'))</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
+</div>
+<p>this request will throw error because server is inactive</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;http://localhost:3003&#39;</span><span class="p">).</span><span class="nx">use</span><span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">plugin</span><span class="p">()).</span><span class="nx">end</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">assert</span><span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">_current</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;request has not been cleared&#39;</span><span class="p">)</span>
+      <span class="nx">done</span><span class="p">()</span>
+    <span class="p">})</span>
+
+
+
+  <span class="p">})</span>
+
+  <span class="nx">it</span><span class="p">(</span><span class="s1">&#39;should work with low concurrency&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">mockServer</span><span class="p">()</span>
+    <span class="kd">let</span> <span class="nx">highest</span> <span class="o">=</span> <span class="nx">max</span><span class="p">()</span>
+    <span class="kd">let</span> <span class="nx">throttle</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Throttle</span><span class="p">({</span>
+      <span class="nx">active</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+      <span class="nx">rate</span><span class="o">:</span> <span class="mi">1000</span><span class="p">,</span>
+      <span class="nx">ratePer</span><span class="o">:</span> <span class="mi">2000</span><span class="p">,</span>
+      <span class="nx">concurrent</span><span class="o">:</span> <span class="mi">2</span>
+    <span class="p">})</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;sent&#39;</span><span class="p">,</span> <span class="nx">highest</span><span class="p">)</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;received&#39;</span><span class="p">,</span> <span class="nx">highest</span><span class="p">)</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-8" id="section-8">&#182;</a>
+</div>
+<p>throttle.on('sent', log('sent'))
+throttle.on('received', log('rcvd'))</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+
+
+    <span class="nx">_</span><span class="p">.</span><span class="nx">times</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">request</span>
+      <span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;http://localhost:3003&#39;</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">plugin</span><span class="p">())</span>
+      <span class="p">.</span><span class="nx">end</span><span class="p">()</span>
+    <span class="p">})</span>
+
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;drained&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="kd">let</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">highest</span><span class="p">()</span>
+      <span class="nx">server</span><span class="p">.</span><span class="nx">close</span><span class="p">()</span>
+      <span class="nx">assert</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">maxConcurrent</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;highest concurrency was 2&#39;</span><span class="p">)</span>
+      <span class="nx">done</span><span class="p">()</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">it</span><span class="p">(</span><span class="s1">&#39;should work with low rate&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">mockServer</span><span class="p">()</span>
+    <span class="kd">let</span> <span class="nx">highest</span> <span class="o">=</span> <span class="nx">max</span><span class="p">()</span>
+    <span class="kd">let</span> <span class="nx">throttle</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Throttle</span><span class="p">({</span>
+      <span class="nx">active</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+      <span class="nx">rate</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+      <span class="nx">ratePer</span><span class="o">:</span> <span class="mi">1000</span><span class="p">,</span>
+      <span class="nx">concurrent</span><span class="o">:</span> <span class="mi">2</span>
+    <span class="p">})</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;sent&#39;</span><span class="p">,</span> <span class="nx">highest</span><span class="p">)</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;received&#39;</span><span class="p">,</span> <span class="nx">highest</span><span class="p">)</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
+</div>
+<p>throttle.on('sent', log('sent'))
+throttle.on('received', log('rcvd'))</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+
+
+    <span class="nx">_</span><span class="p">.</span><span class="nx">times</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">request</span>
+      <span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;http://localhost:3003&#39;</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">plugin</span><span class="p">())</span>
+      <span class="p">.</span><span class="nx">end</span><span class="p">()</span>
+    <span class="p">})</span>
+
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;drained&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="kd">let</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">highest</span><span class="p">()</span>
+      <span class="nx">server</span><span class="p">.</span><span class="nx">close</span><span class="p">()</span>
+      <span class="nx">assert</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">maxRate</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;highest rate was 2&#39;</span><span class="p">)</span>
+      <span class="nx">done</span><span class="p">()</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">it</span><span class="p">(</span><span class="s1">&#39;should work when resource bound (issue #6)&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">mockServer</span><span class="p">()</span>
+    <span class="kd">let</span> <span class="nx">highest</span> <span class="o">=</span> <span class="nx">max</span><span class="p">()</span>
+    <span class="kd">let</span> <span class="nx">throttle</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Throttle</span><span class="p">({</span>
+      <span class="nx">active</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+      <span class="nx">rate</span><span class="o">:</span> <span class="mi">1000</span><span class="p">,</span>
+      <span class="nx">ratePer</span><span class="o">:</span> <span class="mi">5000</span><span class="p">,</span>
+      <span class="nx">concurrent</span><span class="o">:</span> <span class="mi">1000</span>
+    <span class="p">})</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;sent&#39;</span><span class="p">,</span> <span class="nx">highest</span><span class="p">)</span>
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;received&#39;</span><span class="p">,</span> <span class="nx">highest</span><span class="p">)</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-10" id="section-10">&#182;</a>
+</div>
+<p>throttle.on('sent', log('sent'))
+throttle.on('received', log('rcvd'))</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+
+
+    <span class="nx">_</span><span class="p">.</span><span class="nx">times</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">request</span>
+      <span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;http://localhost:3003&#39;</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">plugin</span><span class="p">())</span>
+      <span class="p">.</span><span class="nx">end</span><span class="p">()</span>
+    <span class="p">})</span>
+
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;drained&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="kd">let</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">highest</span><span class="p">()</span>
+      <span class="nx">server</span><span class="p">.</span><span class="nx">close</span><span class="p">()</span>
+      <span class="nx">assert</span><span class="p">.</span><span class="nx">isOk</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="s1">&#39;has thrown error?&#39;</span><span class="p">)</span>
+      <span class="nx">done</span><span class="p">()</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="it%20should%20allow%20serialised%20queues">
+  <h2>
+    <a href="#it%20should%20allow%20serialised%20queues" name="it%20should%20allow%20serialised%20queues" class="pilcrow">&#182;</a>
+    it should allow serialised queues
+  </h2>
+</div>
+
+  </div>
+  <div class="body"><p>this test is pretty ugly, but I can't think of a better way for the time
+being. Basically there's an array of serial identifiers, which are attached
+to requests, then as they come back those identifiers are stored, and teh
+test is passed if no serialised requests come back consecutively.</p>
+
+<p>a better test would ensure that no two serial requests for the same uri
+are requested simultaneously. But for now this will do.</p>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">it</span><span class="p">(</span><span class="s1">&#39;should allow serialised queues&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">mockServer</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="kd">let</span> <span class="nx">throttle</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Throttle</span><span class="p">({</span>
+      <span class="nx">active</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+      <span class="nx">rate</span><span class="o">:</span> <span class="mi">10</span><span class="p">,</span>
+      <span class="nx">ratePer</span><span class="o">:</span> <span class="mi">5000</span><span class="p">,</span>
+      <span class="nx">concurrent</span><span class="o">:</span> <span class="mi">2</span>
+    <span class="p">})</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-12" id="section-12">&#182;</a>
+</div>
+<p>throttle.on('sent', log('sent'))
+throttle.on('received', log('rcvd'))</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+
+
+    <span class="kd">let</span> <span class="nx">uris</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="kc">undefined</span><span class="p">,</span>
+      <span class="s1">&#39;someUri&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;someUri&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;someUri&#39;</span><span class="p">,</span>
+      <span class="kc">undefined</span><span class="p">,</span>
+      <span class="kc">undefined</span><span class="p">,</span>
+      <span class="kc">undefined</span><span class="p">,</span>
+      <span class="kc">undefined</span>
+    <span class="p">]</span>
+    <span class="kd">let</span> <span class="nx">responses</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">uris</span><span class="p">,</span> <span class="p">(</span><span class="nx">uri</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;http://localhost:3003&#39;</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">plugin</span><span class="p">(</span><span class="nx">uri</span><span class="p">))</span>
+      <span class="p">.</span><span class="nx">end</span><span class="p">((</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">responses</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">serial</span><span class="p">))</span>
+    <span class="p">})</span>
+
+    <span class="nx">throttle</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;drained&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-13" id="section-13">&#182;</a>
+</div>
+<p>responses should not have two consecutive 'someUri'</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+      <span class="kd">let</span> <span class="nx">consecutive</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">some</span><span class="p">(</span><span class="nx">responses</span><span class="p">,</span> <span class="p">(</span><span class="nx">response</span><span class="p">,</span> <span class="nx">idx</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="p">(</span>
+          <span class="p">(</span><span class="nx">responses</span><span class="p">[</span><span class="nx">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;someUri&#39;</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+          <span class="p">(</span><span class="nx">responses</span><span class="p">[</span><span class="nx">idx</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;someUri&#39;</span><span class="p">)</span>
+        <span class="p">)</span> <span class="k">return</span> <span class="kc">true</span>
+      <span class="p">})</span>
+      <span class="nx">server</span><span class="p">.</span><span class="nx">close</span><span class="p">()</span>
+      <span class="nx">assert</span><span class="p">.</span><span class="nx">isOk</span><span class="p">(</span><span class="o">!</span><span class="nx">consecutive</span><span class="p">,</span> <span class="s1">&#39;requests have not been serialised&#39;</span><span class="p">)</span>
+      <span class="nx">done</span><span class="p">()</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">it</span> <span class="p">(</span><span class="s1">&#39;should not break end handler (issue #5)&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">mockServer</span><span class="p">()</span>
+    <span class="kd">let</span> <span class="nx">throttle</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Throttle</span><span class="p">()</span>
+
+    <span class="nx">request</span>
+    <span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;http://localhost:3003&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">plugin</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">end</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">assert</span><span class="p">.</span><span class="nx">isOk</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="s1">&#39;end handler not working?&#39;</span><span class="p">)</span>
+      <span class="nx">server</span><span class="p">.</span><span class="nx">close</span><span class="p">()</span>
+      <span class="nx">done</span><span class="p">()</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">it</span> <span class="p">(</span><span class="s1">&#39;should return superagent instance (issue #2)&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">mockServer</span><span class="p">()</span>
+    <span class="kd">let</span> <span class="nx">throttle</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Throttle</span><span class="p">()</span>
+
+    <span class="kd">let</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;http://localhost:3003&#39;</span><span class="p">)</span>
+    <span class="kd">let</span> <span class="nx">returned</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">throttle</span><span class="p">.</span><span class="nx">plugin</span><span class="p">())</span>
+    <span class="nx">assert</span><span class="p">(</span><span class="nx">instance</span> <span class="o">===</span> <span class="nx">returned</span><span class="p">,</span> <span class="s1">&#39;instance not returned&#39;</span><span class="p">)</span>
+    <span class="nx">server</span><span class="p">.</span><span class="nx">close</span><span class="p">()</span>
+  <span class="p">})</span>
+
+
+<span class="p">})</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>
