@@ -27,7 +27,6 @@ that throttles requests. Useful for rate or concurrency limited APIs.
 ## Basic Usage
 
     const request     = require('superagent')
-    const _           = require('underscore')
     const Throttle    = require('superagent-throttle')
 
     let throttle = new Throttle({
@@ -94,7 +93,14 @@ See [theMovieDbApi](https://github.com/leviwheatcroft/moviedb-api/blob/master/in
 
 See the [fancy annotated code](http://leviwheatcroft.github.io/superagent-throttle/docs/index.js.html).
 
-## Changelog 0.2.0
+## Changelog
+
+### 0.2.1
+
+ * fixed bug where errored requests are not cleared from concurrency count
+   (possibly related to issue #6)
+
+### 0.2.0
 
  * Removed extraneous dependencies
  * Fancy ES6 Class definition
