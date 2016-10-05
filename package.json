@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha -t 10000",
-    "docs": "./node_modules/docker/docker -o ./docs -x .README.md,README.md,test,node_modules,notes,docs,.git",
+    "docs": "./node_modules/docker/docker -o ./docs -x .README.md,README.md,node_modules,notes,docs,.git",
     "readme": "node ./node_modules/.bin/node-readme",
     "version": "npm run readme && git add README.md"
   },
