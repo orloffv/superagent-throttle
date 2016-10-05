@@ -210,21 +210,26 @@ class Throttle extends EventEmitter {
    */
   send(request) {
     let throttle = this
+    let end
     throttle.serial(request, true)
-    // attend to the throttle once we get a response
-    request.on('end', () => {
+
+    // declare callback within this enclosure, for access to throttle & request
+    end = () => {
       throttle._current -= 1
-      this.emit('received', request)
+      throttle.emit('received', request)
 
       if (
         (!throttle._buffer.length) &&
         (!throttle._current)
       ) {
-        this.emit('drained')
+        throttle.emit('drained')
       }
       throttle.serial(request, false)
       throttle.cycle()
-    })
+    }
+
+    request.on('end', end)
+    request.on('error', end)
 
 
     // original `request.end` was stored at `request.throttled`
