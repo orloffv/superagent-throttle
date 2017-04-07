@@ -1,58 +1,27 @@
-'use strict'
-/**
- * ## tests
- *
- * I've never written any tests before, so I'm sure there's room for
- * criticism here.
- *
- */
+import Throttle from '../lib/index'
+import nock from 'nock'
+import { assert } from 'chai'
+import request from 'superagent'
+import _ from 'lodash'
 
-const request       = require('superagent')
-const _             = require('lodash')
-const assert        = require('chai').assert
-const Throttle      = require('../index')
-const http          = require('http')
-require('mocha-jshint')({
-  paths: [
-    'index.js'
-  ]
-})
+nock('http://stub')
+.get('/time')
+.times(1000)
+.reply(201, () => Date.now())
 
-let log
-let max
-let mockServer
-let respond
-
-/**
- * ## mockServer
- *
- * a very fancy no-dep http server that just returns 'ok' to every request,
- * it seems to take about 3ms to do the response on my clunky dev machine
- */
-mockServer = (delay, jitter) => {
-  return http.createServer(
-    (request, response) => {
-      if (!delay) return respond(response)
-      if (!jitter) jitter = 0
-      setTimeout(
-        () => respond(response),
-        Math.floor((Math.random() * jitter) + delay)
-      )
-    }
-  ).listen(3003)
-}
-
-respond = (response) => {
-  response.writeHead(200)
-  response.end()
-}
+nock('http://stub')
+.get('/delay')
+.socketDelay(2000)
+.times(1000)
+.reply(200, '<html></html>')
+nock.disableNetConnect()
 
 /**
  * ## log
  *
  * a helper to write pretty tables when attached to Throttle events
  */
-log = function(prefix) {
+function log (prefix) {
   let count = 0
   let start = Date.now()
   return (request) => {
@@ -87,12 +56,11 @@ log = function(prefix) {
  *
  * collates various maximums, useful for tests
  */
-max = function() {
+function max () {
   let count = 0
   let maxRate = 0
   let maxConcurrent = 0
   let maxBuffer = 0
-  let start = Date.now()
   return (request) => {
     if (request) {
       let rate
@@ -102,12 +70,15 @@ max = function() {
         (date) => (date < check)
       )
       count += 1
-      if (maxConcurrent < request.throttle._current)
+      if (maxConcurrent < request.throttle._current) {
         maxConcurrent = request.throttle._current
-      if (maxRate < rate)
+      }
+      if (maxRate < rate) {
         maxRate = rate
-      if (maxBuffer < request.throttle._buffer.length)
+      }
+      if (maxBuffer < request.throttle._buffer.length) {
         maxBuffer = request.throttle._buffer.length
+      }
     }
     return {
       count,
@@ -118,30 +89,25 @@ max = function() {
   }
 }
 
-describe('throttle', () => {
+describe('throttle', function () {
+  this.timeout(15000)
+  it('should clear errored requests (issue #6)', (done) => {
+    let throttle = new Throttle()
 
-  it ('should clear errored requests (issue #6)', (done) => {
-    let throttle = new Throttle({
-      rate: 10000, // how many requests can be sent every `ratePer`
-      ratePer: 10000, // number of ms in which `rate` requests may be sent
-      concurrent: 2 // how many requests can be sent concurrently
-    })
-
-    // .on('sent', log('sent'))
-    // .on('received', log('received'))
-
-    // this request will throw error because server is inactive
-    request.get('http://localhost:3003').use(throttle.plugin()).end(() => {
-      assert(throttle._current == 0, 'request has not been cleared')
+    // `stub/delay` will return after 2000ms
+    request
+    .get('http://stub/delay')
+    .timeout(1000)
+    .use(throttle.plugin())
+    .end((err) => {
+      if (err) console.log(err)
+      console.log(throttle._current)
+      assert(throttle._current === 0, 'request has not been cleared')
       done()
     })
-
-
-
   })
 
   it('should work with low concurrency', (done) => {
-    let server = mockServer()
     let highest = max()
     let throttle = new Throttle({
       active: true,
@@ -151,27 +117,22 @@ describe('throttle', () => {
     })
     throttle.on('sent', highest)
     throttle.on('received', highest)
-    // throttle.on('sent', log('sent'))
-    // throttle.on('received', log('rcvd'))
 
-
-    _.times(100, function(idx) {
+    _.times(10, function (idx) {
       request
-      .get('http://localhost:3003')
+      .get('stub/time')
       .use(throttle.plugin())
       .end()
     })
 
     throttle.on('drained', () => {
       let result = highest()
-      server.close()
-      assert(result.maxConcurrent == 2, 'highest concurrency was 2')
+      assert(result.maxConcurrent === 2, 'highest concurrency was 2')
       done()
     })
   })
 
   it('should work with low rate', (done) => {
-    let server = mockServer()
     let highest = max()
     let throttle = new Throttle({
       active: true,
@@ -181,27 +142,24 @@ describe('throttle', () => {
     })
     throttle.on('sent', highest)
     throttle.on('received', highest)
-    // throttle.on('sent', log('sent'))
-    // throttle.on('received', log('rcvd'))
+    throttle.on('sent', log('sent'))
+    throttle.on('received', log('rcvd'))
 
-
-    _.times(10, function(idx) {
+    _.times(10, (idx) => {
       request
-      .get('http://localhost:3003')
+      .get('stub/time')
       .use(throttle.plugin())
       .end()
     })
 
     throttle.on('drained', () => {
       let result = highest()
-      server.close()
-      assert(result.maxRate == 2, 'highest rate was 2')
+      assert(result.maxRate === 2, 'highest rate was 2')
       done()
     })
   })
 
   it('should work when resource bound (issue #6)', (done) => {
-    let server = mockServer()
     let highest = max()
     let throttle = new Throttle({
       active: true,
@@ -211,20 +169,17 @@ describe('throttle', () => {
     })
     throttle.on('sent', highest)
     throttle.on('received', highest)
-    // throttle.on('sent', log('sent'))
-    // throttle.on('received', log('rcvd'))
+    throttle.on('sent', log('sent'))
+    throttle.on('received', log('rcvd'))
 
-
-    _.times(1000, function(idx) {
+    _.times(500, function (idx) {
       request
-      .get('http://localhost:3003')
+      .get('stub/time')
       .use(throttle.plugin())
       .end()
     })
 
     throttle.on('drained', () => {
-      let result = highest()
-      server.close()
       assert.isOk(true, 'has thrown error?')
       done()
     })
@@ -243,7 +198,6 @@ describe('throttle', () => {
    *
    */
   it('should allow serialised queues', (done) => {
-    let server = mockServer(1000)
     let throttle = new Throttle({
       active: true,
       rate: 10,
@@ -252,7 +206,6 @@ describe('throttle', () => {
     })
     // throttle.on('sent', log('sent'))
     // throttle.on('received', log('rcvd'))
-
 
     let uris = [
       undefined,
@@ -267,52 +220,45 @@ describe('throttle', () => {
     let responses = []
 
     _.each(uris, (uri) => {
-      request.get('http://localhost:3003')
+      request.get('http://stub/time')
       .use(throttle.plugin(uri))
-      .end((err, res) => responses.push(request.serial))
+      .end((err, res) => {
+        if (err) console.log(err)
+        else responses.push(request.serial)
+      })
     })
 
     throttle.on('drained', () => {
       // responses should not have two consecutive 'someUri'
       let consecutive = _.some(responses, (response, idx) => {
-        if (idx == 0) return
+        if (idx === 0) return
         if (
-          (responses[idx - 1] == 'someUri') &&
-          (responses[idx] == 'someUri')
+          (responses[idx - 1] === 'someUri') &&
+          (responses[idx] === 'someUri')
         ) return true
       })
-      server.close()
       assert.isOk(!consecutive, 'requests have not been serialised')
       done()
     })
   })
 
-  it ('should not break end handler (issue #5)', (done) => {
-    let server = mockServer()
+  it('should not break end handler (issue #5)', (done) => {
     let throttle = new Throttle()
 
     request
-    .get('http://localhost:3003')
+    .get('stub/time')
     .use(throttle.plugin())
     .end(() => {
       assert.isOk(true, 'end handler not working?')
-      server.close()
       done()
     })
   })
 
-  it ('should return superagent instance (issue #2)', () => {
-    let server = mockServer()
+  it('should return superagent instance (issue #2)', () => {
     let throttle = new Throttle()
 
-    let instance = request.get('http://localhost:3003')
+    let instance = request.get('stub/time')
     let returned = instance.use(throttle.plugin())
     assert(instance === returned, 'instance not returned')
-    server.close()
   })
-
-
 })
-
-
-
