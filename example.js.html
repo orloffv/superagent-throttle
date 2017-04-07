@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>example.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="doc-style.css" />
+  <script src="doc-filelist.js"></script>
+  <script>
+    var relativeDir = "";
+    var thisFile = "example.js";
+    var defaultSidebar = true;
+  </script>
+  <script src="doc-script.js"></script>
+
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container">
+    <div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+    
+      <tr>
+        <td class="docs">
+          <h1>example.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+    
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1"></a>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-meta">'use strict'</span>
+<span class="hljs-keyword">const</span> request       = <span class="hljs-built_in">require</span>(<span class="hljs-string">'superagent'</span>)
+<span class="hljs-keyword">const</span> _             = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lodash'</span>)
+<span class="hljs-keyword">const</span> Throttle      = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./index'</span>)
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2"></a>
+</div>
+<p>create throttle instance</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">let</span> throttle = <span class="hljs-keyword">new</span> Throttle({
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3"></a>
+</div>
+<p>start unpaused</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  active: <span class="hljs-literal">true</span>,
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4"></a>
+</div>
+<p>send max 5 requests every <code>ratePer</code> ms</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  rate: <span class="hljs-number">5</span>,
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5"></a>
+</div>
+<p>send max <code>rate</code> requests every 10000 ms</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  ratePer: <span class="hljs-number">4000</span>,
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6"></a>
+</div>
+<p>max 2 requests should run concurrently</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  concurrent: <span class="hljs-number">4</span>
+})
+
+_.times(<span class="hljs-number">10</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">idx</span>) </span>{
+  request
+  .get(<span class="hljs-string">'placekitten.com/100/'</span> + (<span class="hljs-number">100</span> + idx))
+  .use(throttle.plugin(<span class="hljs-string">'foo'</span>))
+  .end(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(err ? err : <span class="hljs-string">'serial '</span> + idx)
+  })
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'added '</span> + idx)
+})
+_.times(<span class="hljs-number">10</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">idx</span>) </span>{
+  request
+  .get(<span class="hljs-string">'placekitten.com/100/'</span> + (<span class="hljs-number">100</span> + idx))
+  .use(throttle.plugin())
+  .end(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(err ? err : <span class="hljs-string">'res '</span> + idx)
+  })
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'added '</span> + idx)
+})
+
+
+
+</pre>
+        </td>
+      </tr>
+    
+  </tbody>
+</table>
+
+  </div>
+</body>
+</html>

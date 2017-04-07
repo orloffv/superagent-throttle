@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>README.md</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="doc-style.css" />
+  <script src="doc-filelist.js"></script>
+  <script>
+    var relativeDir = "";
+    var thisFile = "README.md";
+    var defaultSidebar = true;
+  </script>
+  <script src="doc-script.js"></script>
+
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+
+      <div class="heading h1">
+        <a href="#superagent-throttle">superagent-throttle</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#features">Features</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#install">Install</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#basic-usage">Basic Usage</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#events">Events</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#compatibility">Compatibility</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#serialised-sub-queues">Serialised Sub Queues</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#options">Options</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#scripts">Scripts</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#api">Api</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#changelog">Changelog</a>
+      </div>
+
+      <div class="heading h3">
+        <a href="#0.2.2">0.2.2</a>
+      </div>
+
+      <div class="heading h3">
+        <a href="#0.2.1">0.2.1</a>
+      </div>
+
+      <div class="heading h3">
+        <a href="#0.2.0">0.2.0</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#author">Author</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#contributing">Contributing</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#license">License</a>
+      </div>
+
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container">
+    <div class="docs markdown"><div class="pilwrap" id="superagent-throttle">
+  <h1>
+    <a href="#superagent-throttle" name="superagent-throttle" class="pilcrow"></a>
+superagent-throttle
+  </h1>
+</div>
+<p><img src="https://nodei.co/npm/superagent-throttle.png?downloads=true&amp;downloadRank=true&amp;stars=true" alt="nodei.co">
+<img src="https://img.shields.io/npm/v/superagent-throttle.svg" alt="npm">
+<img src="https://img.shields.io/github/issues/leviwheatcroft/superagent-throttle.svg" alt="github-issues">
+<img src="https://img.shields.io/github/stars/leviwheatcroft/superagent-throttle.svg" alt="stars">
+<img src="https://img.shields.io/github/forks/leviwheatcroft/superagent-throttle.svg" alt="forks"></p>
+<p>A plugin for <a href="https://github.com/visionmedia/superagent">superagent</a>
+that throttles requests. Useful for rate or concurrency limited APIs.</p>
+<div class="pilwrap" id="features">
+  <h2>
+    <a href="#features" name="features" class="pilcrow"></a>
+Features
+  </h2>
+</div>
+<ul>
+<li>This doesn't just delay requests by an arbitrary number of ms, but
+intelligently manages requests so they're sent as soon as possible whilst
+staying beneath rate limits.</li>
+<li>Can make serialised subqueues on the fly.</li>
+<li>Follows <a href="https://github.com/visionmedia/superagent">superagent</a>
+<code>.use(throttle.plugin())</code> architecture</li>
+<li>Can use multiple instances</li>
+<li>includes builds for
+<a href="#Compatibility.html">node4 LTS &amp; superagent supported browsers</a></li>
+</ul>
+<div class="pilwrap" id="install">
+  <h2>
+    <a href="#install" name="install" class="pilcrow"></a>
+Install
+  </h2>
+</div>
+<pre><code>  npm i --save superagent-throttle
+</code></pre>
+<div class="pilwrap" id="basic-usage">
+  <h2>
+    <a href="#basic-usage" name="basic-usage" class="pilcrow"></a>
+Basic Usage
+  </h2>
+</div>
+<pre><code>const request     = require('superagent')
+const Throttle    = require('superagent-throttle')
+
+let throttle = new Throttle({
+  active: true,     // set false to pause queue
+  rate: 5,          // how many requests can be sent every `ratePer`
+  ratePer: 10000,   // number of ms in which `rate` requests may be sent
+  concurrent: 2     // how many requests can be sent concurrently
+})
+
+request
+.get('http://placekitten.com/100/100')
+.use(throttle.plugin())
+.end((err, res) =&gt; { ... })
+</code></pre>
+<div class="pilwrap" id="events">
+  <h2>
+    <a href="#events" name="events" class="pilcrow"></a>
+Events
+  </h2>
+</div>
+<pre><code>const request     = require('superagent')
+const Throttle    = require('superagent-throttle')
+
+let throttle = new Throttle()
+.on('sent', (request) =&gt; { ... }) // sent a request
+.on('received', (request) =&gt; { ... }) // received a response
+.on('drained', () =&gt; { ... }) // received last response
+</code></pre>
+<div class="pilwrap" id="compatibility">
+  <h2>
+    <a href="#compatibility" name="compatibility" class="pilcrow"></a>
+Compatibility
+  </h2>
+</div>
+<pre><code>import Throttle from 'superagent-throttle' // node6
+import Throttle from 'superagent-throttle/node4' // node4
+import Throttle from 'superagent-throttle/browser' // superagent browsers
+</code></pre>
+<div class="pilwrap" id="serialised-sub-queues">
+  <h2>
+    <a href="#serialised-sub-queues" name="serialised-sub-queues" class="pilcrow"></a>
+Serialised Sub Queues
+  </h2>
+</div>
+<p>When using API's to update a client, you may want some serialised requests which
+still count towards your rate limit, but do not block other requests. You can
+do that by passing a uri (not necessarily a valid url) to <code>throttle.plugin</code>, for
+those requests you want to serialise, and leave it out for other async requests.
+This can be done on the fly, you don't need to initialise subqueues first.</p>
+<pre><code>let endpoint = 'http://example.com/endpoint'
+request
+.get(endpoint)
+.set('someData': someData)
+.use(throttle.plugin(endpoint))
+.end(callback)
+</code></pre>
+<p>it's common to use an endpoint for the uri, simply to serialise requests to that
+endpoint without interfering with requests to other endpoints</p>
+<div class="pilwrap" id="options">
+  <h2>
+    <a href="#options" name="options" class="pilcrow"></a>
+Options
+  </h2>
+</div>
+<ul>
+<li><code>active</code>: whether or not the queue is paused. (default: true)</li>
+<li><code>rate</code>: how many requests can be sent every <code>ratePer</code>. (default: 40)</li>
+<li><code>ratePer</code>: number of ms in which <code>rate</code> requests may be sent. (default: 40000)</li>
+<li><code>concurrent</code>: how many requests can be sent concurrently. (default: 20)</li>
+</ul>
+<p>Options can be set after instantiation using the <code>options</code> method.</p>
+<pre><code class="javascript">
+    <span class="hljs-keyword">var</span> throttle = <span class="hljs-keyword">new</span> <span class="hljs-built_in">require</span>(<span class="hljs-string">'./index'</span>)({ <span class="hljs-attr">active</span>: <span class="hljs-literal">false</span> }) <span class="hljs-comment">// start paused</span>
+    throttle.options(<span class="hljs-string">'active'</span>, <span class="hljs-literal">true</span>) <span class="hljs-comment">// unpause</span>
+
+</code></pre>
+<div class="pilwrap" id="scripts">
+  <h2>
+    <a href="#scripts" name="scripts" class="pilcrow"></a>
+Scripts
+  </h2>
+</div>
+<pre><code> - **npm run docs** : `rm -fr ./docs/* &amp;&amp; docker -o ./docs -I -x dist,.README.md,test/fixtures,node_modules,docs,coverage`
+</code></pre>
+<ul>
+<li><strong>npm run readme</strong> : <code>node-readme</code></li>
+<li><strong>npm run gh-pages</strong> : <code>gh-pages -d docs</code></li>
+<li><strong>npm run build</strong> : <code>npm run babel:node4 &amp;&amp; npm run babel:browser &amp;&amp; npm run babel:node6 &amp;&amp; npm run readme &amp;&amp; npm run docs &amp;&amp; cp docs/README.md.html docs/index.html &amp;&amp; npm run gh-pages</code></li>
+<li><strong>npm run babel:node4</strong> : <code>cross-env NODE_ENV=node4 babel lib -d dist/node4</code></li>
+<li><strong>npm run babel:browser</strong> : <code>cross-env NODE_ENV=browser babel lib -d dist/node4</code></li>
+<li><strong>npm run babel:node6</strong> : <code>cross-env NODE_ENV=node6 babel lib -d dist</code></li>
+<li><strong>npm run test:coverage</strong> : <code>cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text --check-coverage --lines 100 npm run test</code></li>
+<li><strong>npm run test</strong> : <code>cross-env NODE_ENV=test mocha --compilers js:babel-register test</code></li>
+<li><strong>npm run test:watch</strong> : <code>cross-env NODE_ENV=test mocha --compilers js:babel-register --watch test</code></li>
+<li><strong>npm run version</strong> : <code>npm run build</code></li>
+<li><strong>npm run postversion</strong> : <code>git push &amp;&amp; git push --tags</code></li>
+</ul>
+<div class="pilwrap" id="api">
+  <h2>
+    <a href="#api" name="api" class="pilcrow"></a>
+Api
+  </h2>
+</div>
+<p>See the <a href="http://leviwheatcroft.github.io/superagent-throttle">fancy annotated code</a>.</p>
+<div class="pilwrap" id="changelog">
+  <h2>
+    <a href="#changelog" name="changelog" class="pilcrow"></a>
+Changelog
+  </h2>
+</div>
+<div class="pilwrap" id="0.2.2">
+  <h3>
+    <a href="#0.2.2" name="0.2.2" class="pilcrow"></a>
+0.2.2
+  </h3>
+</div>
+<ul>
+<li>ES6 imports</li>
+<li>included compatibility builds</li>
+<li>switched to <a href="https://github.com/node-nock/nock">nock</a> for test stubbing</li>
+</ul>
+<div class="pilwrap" id="0.2.1">
+  <h3>
+    <a href="#0.2.1" name="0.2.1" class="pilcrow"></a>
+0.2.1
+  </h3>
+</div>
+<ul>
+<li>fixed bug where errored requests are not cleared from concurrency count
+(possibly related to issue #6)</li>
+</ul>
+<div class="pilwrap" id="0.2.0">
+  <h3>
+    <a href="#0.2.0" name="0.2.0" class="pilcrow"></a>
+0.2.0
+  </h3>
+</div>
+<ul>
+<li>Removed extraneous dependencies</li>
+<li>Fancy ES6 Class definition</li>
+<li>Added unit tests</li>
+<li>Event emitter</li>
+<li>breaks 0.1.0 syntax</li>
+</ul>
+<div class="pilwrap" id="author">
+  <h2>
+    <a href="#author" name="author" class="pilcrow"></a>
+Author
+  </h2>
+</div>
+<p>Levi Wheatcroft <a href="mailto:levi@wht.cr.html">levi@wht.cr</a></p>
+<div class="pilwrap" id="contributing">
+  <h2>
+    <a href="#contributing" name="contributing" class="pilcrow"></a>
+Contributing
+  </h2>
+</div>
+<p>Contributions welcome; Please submit all pull requests against the master
+branch.</p>
+<div class="pilwrap" id="license">
+  <h2>
+    <a href="#license" name="license" class="pilcrow"></a>
+License
+  </h2>
+</div>
+<ul>
+<li><strong>MIT</strong> : http://opensource.org/licenses/MIT</li>
+</ul>
+</div>
+  </div>
+</body>
+</html>
