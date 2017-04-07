@@ -173,9 +173,12 @@ let throttle = new Throttle()
 Compatibility
   </h2>
 </div>
-<pre><code>import Throttle from 'superagent-throttle' // node6
-import Throttle from 'superagent-throttle/node4' // node4
-import Throttle from 'superagent-throttle/browser' // superagent browsers
+<pre><code>// node 6
+import Throttle from 'superagent-throttle'
+// node 4
+var Throttle = require('superagent-throttle/dist/node4')
+// all browsers supported by superagent
+var Throttle = require('superagent-throttle/dist/browser')
 </code></pre>
 <div class="pilwrap" id="serialised-sub-queues">
   <h2>
@@ -228,7 +231,7 @@ Scripts
 <li><strong>npm run gh-pages</strong> : <code>gh-pages -d docs</code></li>
 <li><strong>npm run build</strong> : <code>npm run babel:node4 &amp;&amp; npm run babel:browser &amp;&amp; npm run babel:node6 &amp;&amp; npm run readme &amp;&amp; npm run docs &amp;&amp; cp docs/README.md.html docs/index.html &amp;&amp; npm run gh-pages</code></li>
 <li><strong>npm run babel:node4</strong> : <code>cross-env NODE_ENV=node4 babel lib -d dist/node4</code></li>
-<li><strong>npm run babel:browser</strong> : <code>cross-env NODE_ENV=browser babel lib -d dist/node4</code></li>
+<li><strong>npm run babel:browser</strong> : <code>cross-env NODE_ENV=browser babel lib -d dist/browser</code></li>
 <li><strong>npm run babel:node6</strong> : <code>cross-env NODE_ENV=node6 babel lib -d dist</code></li>
 <li><strong>npm run test:coverage</strong> : <code>cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text --check-coverage --lines 100 npm run test</code></li>
 <li><strong>npm run test</strong> : <code>cross-env NODE_ENV=test mocha --compilers js:babel-register test</code></li>
