@@ -1,16 +1,13 @@
 # superagent-throttle
 
 ![nodei.co](https://nodei.co/npm/superagent-throttle.png?downloads=true&downloadRank=true&stars=true)
-
 ![npm](https://img.shields.io/npm/v/superagent-throttle.svg)
+![github-issues](https://img.shields.io/github/issues/leviwheatcroft/superagent-throttle.svg)
+![stars](https://img.shields.io/github/stars/leviwheatcroft/superagent-throttle.svg)
+![forks](https://img.shields.io/github/forks/leviwheatcroft/superagent-throttle.svg)
 
 A plugin for [superagent](https://github.com/visionmedia/superagent)
 that throttles requests. Useful for rate or concurrency limited APIs.
-
-## Notice
-
-I'm working on an es6 branch which will be merged into master, please take a
-look at that before creating a PR against this master branch.
 
 ## Features
 
@@ -20,8 +17,9 @@ look at that before creating a PR against this master branch.
  * Can make serialised subqueues on the fly.
  * Follows [superagent](https://github.com/visionmedia/superagent)
    `.use(throttle.plugin())` architecture
- * Hackable
  * Can use multiple instances
+ * includes builds for
+   [node4 LTS & superagent supported browsers](#Compatibility)
 
 ## Install
 
@@ -55,6 +53,12 @@ look at that before creating a PR against this master branch.
     .on('sent', (request) => { ... }) // sent a request
     .on('received', (request) => { ... }) // received a response
     .on('drained', () => { ... }) // received last response
+
+## Compatibility
+
+    import Throttle from 'superagent-throttle' // node6
+    import Throttle from 'superagent-throttle/node4' // node4
+    import Throttle from 'superagent-throttle/browser' // superagent browsers
 
 ## Serialised Sub Queues
 
@@ -90,15 +94,32 @@ Options can be set after instantiation using the `options` method.
 
 ```
 
-## Advanced Usage
+## Scripts
 
-See [theMovieDbApi](https://github.com/leviwheatcroft/moviedb-api/blob/master/index.js)
+     - **npm run docs** : `rm -fr ./docs/* && docker -o ./docs -I -x dist,.README.md,test/fixtures,node_modules,docs,coverage`
+ - **npm run readme** : `node-readme`
+ - **npm run gh-pages** : `gh-pages -d docs`
+ - **npm run build** : `npm run babel:node4 && npm run babel:browser && npm run babel:node6 && npm run readme && npm run docs && cp docs/README.md.html docs/index.html && npm run gh-pages`
+ - **npm run babel:node4** : `cross-env NODE_ENV=node4 babel lib -d dist/node4`
+ - **npm run babel:browser** : `cross-env NODE_ENV=browser babel lib -d dist/node4`
+ - **npm run babel:node6** : `cross-env NODE_ENV=node6 babel lib -d dist`
+ - **npm run test:coverage** : `cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text --check-coverage --lines 100 npm run test`
+ - **npm run test** : `cross-env NODE_ENV=test mocha --compilers js:babel-register test`
+ - **npm run test:watch** : `cross-env NODE_ENV=test mocha --compilers js:babel-register --watch test`
+ - **npm run version** : `npm run build`
+ - **npm run postversion** : `git push && git push --tags`
 
 ## Api
 
-See the [fancy annotated code](http://leviwheatcroft.github.io/superagent-throttle/docs/index.js.html).
+See the [fancy annotated code](http://leviwheatcroft.github.io/superagent-throttle).
 
 ## Changelog
+
+### 0.2.2
+
+ * ES6 imports
+ * included compatibility builds
+ * switched to [nock](https://github.com/node-nock/nock) for test stubbing
 
 ### 0.2.1
 
@@ -112,8 +133,6 @@ See the [fancy annotated code](http://leviwheatcroft.github.io/superagent-thrott
  * Added unit tests
  * Event emitter
  * breaks 0.1.0 syntax
-
-
 
 ## Author
 

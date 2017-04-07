@@ -1,6 +1,10 @@
 'use strict';
 
-const EventEmitter = require('events');
+var _events = require('events');
+
+var _events2 = _interopRequireDefault(_events);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * ## default options
@@ -23,7 +27,7 @@ let defaults = {
  * @class
  * @param {object} options - key value options
  */
-class Throttle extends EventEmitter {
+class Throttle extends _events2.default {
   constructor(options) {
     super();
     // instance properties
@@ -197,17 +201,21 @@ class Throttle extends EventEmitter {
   /**
    * ## send
    *
+   * sends a queued request.
+   *
    * @param {Request} request superagent request
    * @returns null
    */
   send(request) {
     let throttle = this;
-    let end;
     throttle.serial(request, true);
 
     // declare callback within this enclosure, for access to throttle & request
-    end = () => {
+    function cleanup(err, response) {
       throttle._current -= 1;
+      if (err) {
+        throttle.emit('error', response);
+      }
       throttle.emit('received', request);
 
       if (!throttle._buffer.length && !throttle._current) {
@@ -215,14 +223,12 @@ class Throttle extends EventEmitter {
       }
       throttle.serial(request, false);
       throttle.cycle();
-    };
+      // original `callback` was stored at `request._maskedCallback`
+      request._maskedCallback(err, response);
+    }
 
-    request.on('end', end);
-    request.on('error', end);
-
-    // original `request.end` was stored at `request.throttled`
-    // original `callback` was stored at `request._callback`
-    request.throttled.apply(request, [request._callback]);
+    // original `request.end` was stored at `request._maskedEnd`
+    request._maskedEnd(cleanup);
     throttle._requestTimes.push(Date.now());
     throttle._current += 1;
     this.emit('sent', request);
@@ -234,28 +240,29 @@ class Throttle extends EventEmitter {
    * `superagent` `use` function should refer to this plugin method a la
    * `.use(throttle.plugin())`
    *
+   * mask the original `.end` and store the callback passed in
+   *
    * @method
    * @param {string} serial any string is ok, it's just a namespace
    * @returns null
    */
   plugin(serial) {
     let throttle = this;
-    //let patch = function(request) {
+    // let patch = function(request) {
     return request => {
       request.throttle = throttle;
       request.serial = serial || false;
       // replace request.end
-      request.throttled = request.end;
+      request._maskedEnd = request.end;
       request.end = function (callback) {
         // store callback as superagent does
-        request._callback = callback;
+        request._maskedCallback = callback || function () {};
         // place this request in the queue
         request.throttle.cycle(request);
         return request;
       };
       return request;
     };
-    //return _.isObject(serial) ? patch(serial) : patch
   }
 }
 
