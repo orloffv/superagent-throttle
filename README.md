@@ -56,9 +56,12 @@ that throttles requests. Useful for rate or concurrency limited APIs.
 
 ## Compatibility
 
-    import Throttle from 'superagent-throttle' // node6
-    import Throttle from 'superagent-throttle/node4' // node4
-    import Throttle from 'superagent-throttle/browser' // superagent browsers
+    // node 6
+    import Throttle from 'superagent-throttle'
+    // node 4
+    var Throttle = require('superagent-throttle/dist/node4')
+    // all browsers supported by superagent
+    var Throttle = require('superagent-throttle/dist/browser')
 
 ## Serialised Sub Queues
 
@@ -101,7 +104,7 @@ Options can be set after instantiation using the `options` method.
  - **npm run gh-pages** : `gh-pages -d docs`
  - **npm run build** : `npm run babel:node4 && npm run babel:browser && npm run babel:node6 && npm run readme && npm run docs && cp docs/README.md.html docs/index.html && npm run gh-pages`
  - **npm run babel:node4** : `cross-env NODE_ENV=node4 babel lib -d dist/node4`
- - **npm run babel:browser** : `cross-env NODE_ENV=browser babel lib -d dist/node4`
+ - **npm run babel:browser** : `cross-env NODE_ENV=browser babel lib -d dist/browser`
  - **npm run babel:node6** : `cross-env NODE_ENV=node6 babel lib -d dist`
  - **npm run test:coverage** : `cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text --check-coverage --lines 100 npm run test`
  - **npm run test** : `cross-env NODE_ENV=test mocha --compilers js:babel-register test`
