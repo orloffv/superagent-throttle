@@ -19,7 +19,7 @@ that throttles requests. Useful for rate or concurrency limited APIs.
    `.use(throttle.plugin())` architecture
  * Can use multiple instances
  * includes builds for
-   [node4 LTS & superagent supported browsers](#Compatibility)
+   [node4 LTS & superagent supported browsers](#compatibility)
 
 ## Install
 
