@@ -14,6 +14,12 @@ nock('http://stub')
 .socketDelay(2000)
 .times(1000)
 .reply(200, '<html></html>')
+
+nock('http://stub')
+.get('/error')
+.times(1000)
+.reply(400)
+
 nock.disableNetConnect()
 
 /**
@@ -260,5 +266,16 @@ describe('throttle', function () {
     let instance = request.get('stub/time')
     let returned = instance.use(throttle.plugin())
     assert(instance === returned, 'instance not returned')
+  })
+
+  it('should not throw error when error listeners are attached', done => {
+    const throttle = new Throttle()
+      .on('error', () => null)
+    const instance = request.get('stub/error')
+      .use(throttle.plugin())
+
+    assert.doesNotThrow(() =>
+      instance.end(() => done())
+    )
   })
 })
