@@ -707,7 +707,7 @@ send
         <td class="code highlight">
           <pre class="javascript">    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">cleanup</span> (<span class="hljs-params">err, response</span>) </span>{
       throttle._current -= <span class="hljs-number">1</span>
-      <span class="hljs-keyword">if</span> (err) {
+      <span class="hljs-keyword">if</span> (err &amp;&amp; EventEmitter.listenerCount(throttle, <span class="hljs-string">'error'</span>)) {
         throttle.emit(<span class="hljs-string">'error'</span>, response)
       }
       throttle.emit(<span class="hljs-string">'received'</span>, request)
