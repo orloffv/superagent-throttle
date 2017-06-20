@@ -1,6 +1,6 @@
 {
   "name": "superagent-throttle",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "A plugin for superagent that throttles requests.",
   "main": "dist",
   "scripts": {
