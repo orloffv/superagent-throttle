@@ -250,7 +250,7 @@ var Throttle = function (_EventEmitter) {
       // declare callback within this enclosure, for access to throttle & request
       function cleanup(err, response) {
         throttle._current -= 1;
-        if (err) {
+        if (err && _events2.default.listenerCount(throttle, 'error')) {
           throttle.emit('error', response);
         }
         throttle.emit('received', request);
