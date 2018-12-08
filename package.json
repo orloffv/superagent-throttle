@@ -35,11 +35,9 @@
     "url": "https://github.com/leviwheatcroft/superagent-throttle/issues"
   },
   "homepage": "http://leviwheatcroft.github.io/superagent-throttle",
-  "dependencies": {
-    "superagent": "^1.8.3",
-    "vow": "^0.4.15"
-  },
   "devDependencies": {
+    "superagent": "^3.8.2",
+    "vow": "^0.4.17",
     "babel-cli": "^6.16.0",
     "babel-core": "^6.17.0",
     "babel-eslint": "^7.0.0",
