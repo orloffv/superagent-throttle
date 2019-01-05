@@ -99,10 +99,11 @@ Options can be set after instantiation using the `options` method.
 
 ## Scripts
 
-     - **npm run docs** : `rm -fr ./docs/* && docker -o ./docs -I -x dist,.README.md,test/fixtures,node_modules,docs,coverage`
+     - **npm run jsdoc** : `rm -fr ./docs/* && jsdoc lib -d docs`
+ - **npm run docs** : `npm run jsdoc && npm run gh-pages`
  - **npm run readme** : `node-readme`
  - **npm run gh-pages** : `gh-pages -d docs`
- - **npm run build** : `npm run babel:node4 && npm run babel:browser && npm run babel:node6 && npm run readme && npm run docs && cp docs/README.md.html docs/index.html && npm run gh-pages`
+ - **npm run build** : `npm run babel:node4 && npm run babel:browser && npm run babel:node6 && npm run readme && npm run docs`
  - **npm run babel:node4** : `cross-env NODE_ENV=node4 babel lib -d dist/node4`
  - **npm run babel:browser** : `cross-env NODE_ENV=browser babel lib -d dist/browser`
  - **npm run babel:node6** : `cross-env NODE_ENV=node6 babel lib -d dist`

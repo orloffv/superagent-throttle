@@ -254,7 +254,13 @@ let defaults = {
       // replace request.end
       request._maskedEnd = request.end;
       request.end = function (callback) {
-        // store callback as superagent does
+        // when superagent receives a redirect header it essentially resets
+        // the original request and calls `end` again with the new target url
+        // that means throttle hasn't cleaned up yet, and still considers the
+        // request to be in flight.
+        // Therefore, when called by a redirect, just pass through to maskedEnd
+        if (request._redirects > 0) return request._maskedEnd(callback);
+
         request._maskedCallback = callback || function () {};
         // place this request in the queue
         request.throttle.cycle(request);

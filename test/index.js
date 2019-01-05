@@ -309,4 +309,29 @@ describe('throttle', function () {
       done()
     })
   })
+  it('should work with lots of redirects', (done) => {
+    let highest = max()
+    let throttle = new Throttle({
+      active: true,
+      rate: 10,
+      ratePer: 500,
+      concurrent: 5
+    })
+    throttle.on('sent', highest)
+    throttle.on('received', highest)
+    throttle.on('sent', log('sent'))
+    throttle.on('received', log('rcvd'))
+
+    _.times(20, function (idx) {
+      request
+      .get('stub/redirect')
+      .use(throttle.plugin())
+      .end()
+    })
+
+    throttle.on('drained', () => {
+      assert.isOk(true, 'has thrown error?')
+      done()
+    })
+  })
 })
