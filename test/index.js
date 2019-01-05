@@ -23,6 +23,20 @@ nock('http://stub')
 .times(1000)
 .reply(400)
 
+nock('http://stub')
+.get('/redirect')
+.times(1000)
+.reply(301, '', {
+  'Location': 'http://stub/delay'
+})
+
+nock('http://stub')
+.get('/redirect-to-error')
+.times(1000)
+.reply(301, '', {
+  'Location': 'http://stub/error'
+})
+
 nock.disableNetConnect()
 
 /**
@@ -281,5 +295,18 @@ describe('throttle', function () {
     assert.doesNotThrow(() =>
       instance.end(() => done())
     )
+  })
+
+  it('should work with redirects', (done) => {
+    let throttle = new Throttle()
+
+    // currently failing with uncatchable 'Maximum Call Stack Size Exceeded'
+    request
+    .get('http://stub/redirect')
+    .use(throttle.plugin())
+    .end((err) => {
+      if (err) console.log(err)
+      done()
+    })
   })
 })
