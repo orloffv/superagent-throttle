@@ -26,16 +26,15 @@ var defaults = {
   ratePer: 40000,
   // max concurrent requests
   concurrent: 20
+
+  /**
+   * ## Throttle
+   * The throttle object.
+   *
+   * @class
+   * @param {object} options - key value options
+   */
 };
-
-/**
- * ## Throttle
- * The throttle object.
- *
- * @class
- * @param {object} options - key value options
- */
-
 var Throttle = function (_EventEmitter) {
   _inherits(Throttle, _EventEmitter);
 
