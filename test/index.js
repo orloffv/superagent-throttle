@@ -3,6 +3,9 @@ import nock from 'nock'
 import { assert } from 'chai'
 import request from 'superagent'
 import _ from 'lodash'
+import debug from 'debug'
+
+const debugThrottle = debug('superagent-throttle')
 
 nock('http://stub')
 .get('/time')
@@ -31,6 +34,7 @@ function log (prefix) {
   let count = 0
   let start = Date.now()
   return (request) => {
+    if (!debugThrottle.enabled) return
     let rate
     let check = new Date(Date.now() - request.throttle.ratePer)
     rate = request.throttle._requestTimes.length - 1 - _.findLastIndex(
@@ -107,7 +111,7 @@ describe('throttle', function () {
     .use(throttle.plugin())
     .end((err) => {
       if (err) console.log(err)
-      console.log(throttle._current)
+      // console.log(throttle._current)
       assert(throttle._current === 0, 'request has not been cleared')
       done()
     })
