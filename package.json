@@ -36,8 +36,6 @@
   },
   "homepage": "http://leviwheatcroft.github.io/superagent-throttle",
   "devDependencies": {
-    "superagent": "^3.8.2",
-    "vow": "^0.4.17",
     "babel-cli": "^6.16.0",
     "babel-core": "^6.17.0",
     "babel-eslint": "^7.0.0",
@@ -61,7 +59,9 @@
     "nock": "^9.0.11",
     "node-readme": "^0.1.9",
     "node-resemble-js": "^0.1.1",
-    "nyc": "^8.3.1"
+    "nyc": "^8.3.1",
+    "superagent": "^4.1.0",
+    "vow": "^0.4.17"
   },
   "eslintConfig": {
     "parser": "babel-eslint",
