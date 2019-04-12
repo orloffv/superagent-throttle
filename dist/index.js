@@ -231,6 +231,9 @@ let defaults = {
     throttle._requestTimes.push(Date.now());
     throttle._current += 1;
     this.emit('sent', request);
+    request.on('abort', () => {
+      cleanup();
+    });
   }
 
   /**
